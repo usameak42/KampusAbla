@@ -34,9 +34,9 @@ export default function AnalyticsDashboard() {
   const { data: summaryData, isLoading: isLoadingSummary } = useQuery({
     queryKey: ["analytics-summary"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_admin_analytics_summary" as any);
+      const { data, error } = await (supabase as any).rpc("get_admin_analytics_summary");
       if (error) throw error;
-      return (data?.[0] ?? {}) as SummaryData;
+      return ((data as any)?.[0] ?? {}) as SummaryData;
     },
   });
 

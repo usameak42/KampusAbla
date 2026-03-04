@@ -32,7 +32,7 @@ export function useDisputes(userId: string) {
                 .order("created_at", { ascending: false });
 
             if (error) throw error;
-            return data as Dispute[];
+            return data as unknown as Dispute[];
         },
         enabled: !!userId,
     });
