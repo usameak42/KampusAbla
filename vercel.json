@@ -1,0 +1,26 @@
+{
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "framework": "vite",
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "Strict-Transport-Security",
+                    "value": "max-age=31536000; includeSubDomains; preload"
+                }
+            ]
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/health",
+            "destination": "/health.json"
+        },
+        {
+            "source": "/status",
+            "destination": "/status.html"
+        }
+    ]
+}

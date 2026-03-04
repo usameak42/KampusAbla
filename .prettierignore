@@ -1,0 +1,23 @@
+# Dependencies
+node_modules
+dist
+build
+
+# Production
+*.log
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env.local
+.env.production
+
+# Generated files
+coverage
+*.tsbuildinfo

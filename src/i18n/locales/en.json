@@ -1,0 +1,181 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "yes": "Yes",
+    "no": "No",
+    "or": "or",
+    "and": "and",
+    "all": "All",
+    "none": "None",
+    "viewMore": "View more",
+    "seeAll": "See all",
+    "close": "Close"
+  },
+  "nav": {
+    "home": "Home",
+    "findSitter": "Find a Sitter",
+    "howItWorks": "How It Works",
+    "forStudents": "For Students",
+    "about": "About",
+    "login": "Log In",
+    "signup": "Sign Up",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "messages": "Messages",
+    "bookings": "Bookings",
+    "earnings": "Earnings",
+    "settings": "Settings",
+    "logout": "Log Out"
+  },
+  "landing": {
+    "hero": {
+      "title": "Trusted Student Sitters",
+      "subtitle": "Trusted Student Care",
+      "description": "Match with verified university students for safe play, Turkish/English practice, and homework help for your child.",
+      "ctaParent": "Find a Sitter",
+      "ctaStudent": "Become a Sitter",
+      "trustBadge": "{{count}}+ Verified Students"
+    },
+    "features": {
+      "title": "Why KampusAbla?",
+      "subtitle": "A platform designed with safety in mind",
+      "verified": {
+        "title": "Verified Students",
+        "description": "3rd year+ university students vetted with ID, student verification, and background checks"
+      },
+      "location": {
+        "title": "Live Location Tracking"
+      },
+      "chat": {
+        "title": "Secure Communication",
+        "description": "In-app messaging without sharing phone numbers"
+      },
+      "payment": {
+        "title": "Secure Payment",
+        "description": "Pay before session, protected by the platform"
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "parent": {
+        "title": "For Parents",
+        "step1": {
+          "title": "Choose a Sitter",
+          "description": "Browse verified sitters near your school"
+        },
+        "step2": {
+          "title": "Book a Session",
+          "description": "Specify date, time, and your needs"
+        },
+        "step3": {
+          "title": "Track Live",
+          "description": "See every moment with live location"
+        }
+      },
+      "student": {
+        "title": "For Students",
+        "step1": {
+          "title": "Create Profile",
+          "description": "Share your university info and skills"
+        },
+        "step2": {
+          "title": "Get Verified",
+          "description": "Upload documents and get approved"
+        },
+        "step3": {
+          "title": "Start Earning",
+          "description": "Earn ₺450-800/hour with flexible hours"
+        }
+      }
+    },
+    "stats": {
+      "students": "Verified Students",
+      "sessions": "Sessions Completed",
+      "rating": "Average Rating",
+      "response": "Avg Response Time"
+    },
+    "cta": {
+      "title": "Looking for a trusted sitter for your child?",
+      "subtitle": "Sign up for free and discover verified students near you.",
+      "button": "Get Started"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Log in to your account",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot Password",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create Account",
+      "button": "Log In"
+    },
+    "signup": {
+      "title": "Create Account",
+      "subtitle": "Join KampusAbla",
+      "roleSelection": {
+        "title": "How Would You Like to Join?",
+        "parent": {
+          "title": "Parent",
+          "description": "I'm looking for a sitter for my child"
+        },
+        "student": {
+          "title": "Student",
+          "description": "I want to work as a sitter"
+        }
+      },
+      "email": "Email",
+      "phone": "Phone",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Log In",
+      "button": "Sign Up",
+      "terms": "By signing up, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "We'll send a reset link to your email",
+      "email": "Email",
+      "button": "Send Reset Link",
+      "backToLogin": "Back to Login",
+      "success": "Reset link sent to your email"
+    }
+  },
+  "languages": {
+    "tr": "Türkçe",
+    "en": "English",
+    "ar": "العربية"
+  },
+  "footer": {
+    "description": "A secure bridge between verified university students and families.",
+    "links": {
+      "company": "Company",
+      "about": "About Us",
+      "careers": "Careers",
+      "press": "Press",
+      "support": "Support",
+      "help": "Help Center",
+      "safety": "Safety",
+      "contact": "Contact",
+      "legal": "Legal",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "cookies": "Cookie Policy"
+    },
+    "copyright": "© {{year}} KampusAbla. All rights reserved."
+  }
+}

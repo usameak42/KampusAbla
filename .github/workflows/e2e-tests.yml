@@ -1,0 +1,181 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run E2E tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        # Run tests in parallel across multiple browsers
+        browser: [chromium, firefox, webkit]
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+        
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+        
+      - name: Build application
+        run: npm run build
+        
+      - name: Start application
+        run: |
+          npm run preview &
+          sleep 10
+          
+      - name: Run Playwright tests
+        run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          # Base URL for the application
+          BASE_URL: http://localhost:4173
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 30
+          
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report-${{ matrix.browser }}
+          path: coverage/
+          retention-days: 30
+          
+  e2e-reports:
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: playwright-reports-*
+          
+      - name: Merge test reports
+        run: |
+          # Create combined report directory
+          mkdir -p combined-reports
+          
+          # Merge all test results
+          find playwright-report-* -name "*.json" -exec cp {} combined-reports/ \;
+          
+          # Generate summary
+          npx playwright merge-reports combined-reports/
+          
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Read merged test results
+            const reportPath = path.join(process.cwd(), 'combined-reports', 'results.json');
+            if (fs.existsSync(reportPath)) {
+              const results = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+              
+              // Calculate totals
+              const totalTests = results.suites.reduce((sum, suite) => sum + suite.specs.length, 0);
+              const passedTests = results.suites.reduce((sum, suite) => 
+                sum + suite.specs.reduce((specSum, spec) => specSum + spec.tests.filter(t => t.results?.[0]?.status === 'passed').length, 0), 0
+              , 0);
+              const failedTests = results.suites.reduce((sum, suite) => 
+                sum + suite.specs.reduce((specSum, spec) => specSum + spec.tests.filter(t => t.results?.[0]?.status === 'failed').length, 0), 0
+              , 0);
+              
+              // Create comment
+              const comment = `
+              ## 🧪 E2E Test Results
+              
+              **Summary:**
+              - ✅ Passed: ${passedTests}
+              - ❌ Failed: ${failedTests}
+              - 📊 Total: ${totalTests}
+              - 📈 Success Rate: ${((passedTests / totalTests) * 100).toFixed(1)}%
+              
+              **Failed Tests:**
+              ${results.suites.flatMap(suite => 
+                suite.specs.flatMap(spec => 
+                  spec.tests.filter(test => test.results?.[0]?.status === 'failed')
+                    .map(test => `- ${test.title}: ${test.results?.[0]?.error?.message || 'Unknown error'}`)
+                )
+              ).join('\n') || 'None'}
+              `;
+              
+              // Post comment
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+            
+      - name: Send Slack notification on failure
+        if: failure()
+        run: |
+          # Send notification to Slack channel
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"E2E Tests Failed! See: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+          
+  e2e-alerts:
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    if: failure()
+    
+    steps:
+      - name: Send email alert
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "🚨 E2E Test Failure - KampüsAbla"
+          to: ${{ secrets.ALERT_EMAIL }}
+          from: "noreply@kampusabla.com"
+          body: |
+            E2E tests have failed in the ${{ github.repository }} repository.
+            
+            Build: ${{ github.sha }}
+            Branch: ${{ github.ref }}
+            Workflow: ${{ github.workflow }}
+            Run ID: ${{ github.run_id }}
+            
+            Please check the GitHub Actions for details:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

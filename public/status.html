@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KampusAbla Status</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f6f8fb;
+        color: #1f2937;
+      }
+      .wrap {
+        max-width: 760px;
+        margin: 48px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 14px;
+      }
+      .ok {
+        color: #166534;
+        font-weight: 700;
+      }
+      a {
+        color: #1d4ed8;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      code {
+        background: #eef2ff;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>KampusAbla Public Status</h1>
+      <div class="card">
+        <p class="ok">Operational</p>
+        <p>This status page is backed by external uptime monitors.</p>
+      </div>
+      <div class="card">
+        <h2>Health Endpoints</h2>
+        <p>Frontend ping: <code>/health</code></p>
+        <p>Database health check: <code>/functions/v1/health-check</code></p>
+      </div>
+      <div class="card">
+        <h2>Incident Contact</h2>
+        <p>Email: <a href="mailto:support@kampusabla.com">support@kampusabla.com</a></p>
+      </div>
+    </div>
+  </body>
+</html>

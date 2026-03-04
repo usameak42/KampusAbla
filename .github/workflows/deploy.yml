@@ -1,0 +1,219 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  pre-deploy-checks:
+    name: Pre-deploy Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: npm run test:e2e
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_STAGING }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_STAGING }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY_STAGING }}
+
+      - name: Security audit
+        run: npm audit --audit-level=high
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_STAGING }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_STAGING }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY_STAGING }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: pre-deploy-checks
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_STAGING }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_STAGING }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY_STAGING }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          VITE_APP_VERSION: ${{ github.sha }}
+
+      - name: Deploy to Vercel (Staging)
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+
+      - name: Staging health check
+        run: |
+          if [ -z "${{ secrets.STAGING_HEALTHCHECK_URL }}" ]; then
+            echo "STAGING_HEALTHCHECK_URL is not set"
+            exit 1
+          fi
+          curl --fail --silent --show-error "${{ secrets.STAGING_HEALTHCHECK_URL }}"
+
+      - name: Create Sentry release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        with:
+          environment: staging
+          version: ${{ github.sha }}
+
+      - name: Automatic rollback (staging)
+        if: failure() && secrets.VERCEL_ROLLBACK_URL_STAGING != ''
+        run: |
+          npx vercel rollback "${{ secrets.VERCEL_ROLLBACK_URL_STAGING }}" \
+            --token "${{ secrets.VERCEL_TOKEN }}" \
+            --scope "${{ secrets.VERCEL_ORG_ID }}"
+
+      - name: Notify Slack (staging)
+        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        run: |
+          STATUS="${{ job.status }}"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"[staging] deploy ${STATUS} for ${GITHUB_SHA}\"}" \
+            "${{ secrets.SLACK_WEBHOOK_URL }}"
+
+      - name: Notify Discord (staging)
+        if: always() && secrets.DISCORD_WEBHOOK_URL != ''
+        run: |
+          STATUS="${{ job.status }}"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"content\":\"[staging] deploy ${STATUS} for ${GITHUB_SHA}\"}" \
+            "${{ secrets.DISCORD_WEBHOOK_URL }}"
+
+  deploy-production:
+    name: Deploy to Production
+    needs: pre-deploy-checks
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_PRODUCTION }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_PRODUCTION }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY_PRODUCTION }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          VITE_APP_VERSION: ${{ github.sha }}
+
+      - name: Deploy to Vercel (Production)
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: "--prod"
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+
+      - name: Production health check
+        run: |
+          if [ -z "${{ secrets.PRODUCTION_HEALTHCHECK_URL }}" ]; then
+            echo "PRODUCTION_HEALTHCHECK_URL is not set"
+            exit 1
+          fi
+          curl --fail --silent --show-error "${{ secrets.PRODUCTION_HEALTHCHECK_URL }}"
+
+      - name: Create Sentry release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        with:
+          environment: production
+          version: ${{ github.sha }}
+          finalize: true
+
+      - name: Automatic rollback (production)
+        if: failure() && secrets.VERCEL_ROLLBACK_URL_PRODUCTION != ''
+        run: |
+          npx vercel rollback "${{ secrets.VERCEL_ROLLBACK_URL_PRODUCTION }}" \
+            --token "${{ secrets.VERCEL_TOKEN }}" \
+            --scope "${{ secrets.VERCEL_ORG_ID }}"
+
+      - name: Notify Slack (production)
+        if: always() && secrets.SLACK_WEBHOOK_URL != ''
+        run: |
+          STATUS="${{ job.status }}"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"[production] deploy ${STATUS} for ${GITHUB_SHA}\"}" \
+            "${{ secrets.SLACK_WEBHOOK_URL }}"
+
+      - name: Notify Discord (production)
+        if: always() && secrets.DISCORD_WEBHOOK_URL != ''
+        run: |
+          STATUS="${{ job.status }}"
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"content\":\"[production] deploy ${STATUS} for ${GITHUB_SHA}\"}" \
+            "${{ secrets.DISCORD_WEBHOOK_URL }}"

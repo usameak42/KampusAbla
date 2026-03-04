@@ -1,0 +1,30 @@
+name: Weekly Analytics Report
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger weekly analytics email report
+        env:
+          FUNCTIONS_BASE_URL: ${{ secrets.SUPABASE_FUNCTIONS_BASE_URL }}
+          REPORT_WEBHOOK_SECRET: ${{ secrets.REPORT_WEBHOOK_SECRET }}
+        run: |
+          if [ -z "$FUNCTIONS_BASE_URL" ]; then
+            echo "SUPABASE_FUNCTIONS_BASE_URL is not set"
+            exit 1
+          fi
+          if [ -z "$REPORT_WEBHOOK_SECRET" ]; then
+            echo "REPORT_WEBHOOK_SECRET is not set"
+            exit 1
+          fi
+
+          curl --fail-with-body -X POST \
+            "$FUNCTIONS_BASE_URL/weekly-analytics-report" \
+            -H "Content-Type: application/json" \
+            -H "x-report-secret: $REPORT_WEBHOOK_SECRET" \
+            -d '{"trigger":"github_actions_schedule"}'

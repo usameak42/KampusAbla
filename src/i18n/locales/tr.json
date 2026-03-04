@@ -1,0 +1,182 @@
+{
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Bir hata oluştu",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "confirm": "Onayla",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "back": "Geri",
+    "next": "İleri",
+    "submit": "Gönder",
+    "search": "Ara",
+    "filter": "Filtrele",
+    "clear": "Temizle",
+    "yes": "Evet",
+    "no": "Hayır",
+    "or": "veya",
+    "and": "ve",
+    "all": "Tümü",
+    "none": "Hiçbiri",
+    "viewMore": "Daha fazla",
+    "seeAll": "Tümünü gör",
+    "close": "Kapat"
+  },
+  "nav": {
+    "home": "Ana Sayfa",
+    "findSitter": "Abla Bul",
+    "howItWorks": "Nasıl Çalışır",
+    "forStudents": "Öğrenciler İçin",
+    "about": "Hakkımızda",
+    "login": "Giriş Yap",
+    "signup": "Kayıt Ol",
+    "dashboard": "Panel",
+    "profile": "Profil",
+    "messages": "Mesajlar",
+    "bookings": "Rezervasyonlar",
+    "earnings": "Kazançlar",
+    "settings": "Ayarlar",
+    "logout": "Çıkış Yap"
+  },
+  "landing": {
+    "hero": {
+      "title": "Güvenilir Üniversiteli Ablalar",
+      "subtitle": "Okuldan Alım & Eğitim Desteği",
+      "description": "Doğrulanmış üniversite öğrencileri ile çocuğunuzun okuldan alınması, Türkçe/İngilizce pratiği ve ödev desteği için güvenle eşleşin.",
+      "ctaParent": "Abla Ara",
+      "ctaStudent": "Abla Ol",
+      "trustBadge": "{{count}}+ Doğrulanmış Öğrenci"
+    },
+    "features": {
+      "title": "Neden KampusAbla?",
+      "subtitle": "Güvenlik odaklı tasarlanmış platform",
+      "verified": {
+        "title": "Doğrulanmış Öğrenciler",
+        "description": "Kimlik, öğrenci belgesi ve adli sicil kontrolünden geçmiş 3. sınıf ve üzeri üniversite öğrencileri"
+      },
+      "location": {
+        "title": "Canlı Konum Takibi",
+        "description": "Okuldan alım sırasında gerçek zamanlı konum paylaşımı ile tam güvenlik"
+      },
+      "chat": {
+        "title": "Güvenli İletişim",
+        "description": "Telefon numarası paylaşmadan uygulama içi mesajlaşma"
+      },
+      "payment": {
+        "title": "Güvenli Ödeme",
+        "description": "Seans öncesi ödeme, platform güvencesiyle"
+      }
+    },
+    "howItWorks": {
+      "title": "Nasıl Çalışır?",
+      "parent": {
+        "title": "Ebeveynler İçin",
+        "step1": {
+          "title": "Abla Seç",
+          "description": "Okulunuza yakın, doğrulanmış ablaları inceleyin"
+        },
+        "step2": {
+          "title": "Rezervasyon Yap",
+          "description": "Tarih, saat ve ihtiyaçlarınızı belirtin"
+        },
+        "step3": {
+          "title": "Takip Et",
+          "description": "Canlı konum ile sürecin her anını görün"
+        }
+      },
+      "student": {
+        "title": "Öğrenciler İçin",
+        "step1": {
+          "title": "Profil Oluştur",
+          "description": "Üniversite bilgilerinizi ve yeteneklerinizi paylaşın"
+        },
+        "step2": {
+          "title": "Doğrulanın",
+          "description": "Belgelerinizi yükleyin ve onay alın"
+        },
+        "step3": {
+          "title": "Kazanmaya Başla",
+          "description": "Esnek saatlerle 450-800₺/saat kazanın"
+        }
+      }
+    },
+    "stats": {
+      "students": "Doğrulanmış Öğrenci",
+      "sessions": "Tamamlanan Seans",
+      "rating": "Ortalama Puan",
+      "response": "Ort. Yanıt Süresi"
+    },
+    "cta": {
+      "title": "Çocuğunuz için güvenilir bir abla mı arıyorsunuz?",
+      "subtitle": "Hemen ücretsiz kaydolun ve yakınlarınızdaki doğrulanmış öğrencileri keşfedin.",
+      "button": "Hemen Başla"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Hoş Geldiniz",
+      "subtitle": "Hesabınıza giriş yapın",
+      "email": "E-posta",
+      "password": "Şifre",
+      "forgotPassword": "Şifremi Unuttum",
+      "noAccount": "Hesabınız yok mu?",
+      "createAccount": "Hesap Oluştur",
+      "button": "Giriş Yap"
+    },
+    "signup": {
+      "title": "Hesap Oluştur",
+      "subtitle": "KampusAbla'ya katılın",
+      "roleSelection": {
+        "title": "Nasıl Katılmak İstersiniz?",
+        "parent": {
+          "title": "Ebeveyn",
+          "description": "Çocuğum için abla arıyorum"
+        },
+        "student": {
+          "title": "Öğrenci",
+          "description": "Abla olarak çalışmak istiyorum"
+        }
+      },
+      "email": "E-posta",
+      "phone": "Telefon",
+      "password": "Şifre",
+      "confirmPassword": "Şifreyi Onayla",
+      "hasAccount": "Zaten hesabınız var mı?",
+      "loginLink": "Giriş Yap",
+      "button": "Kayıt Ol",
+      "terms": "Kayıt olarak, <terms>Kullanım Koşulları</terms> ve <privacy>Gizlilik Politikası</privacy>'nı kabul ediyorsunuz."
+    },
+    "resetPassword": {
+      "title": "Şifre Sıfırla",
+      "subtitle": "E-posta adresinize sıfırlama bağlantısı göndereceğiz",
+      "email": "E-posta",
+      "button": "Sıfırlama Bağlantısı Gönder",
+      "backToLogin": "Giriş'e Dön",
+      "success": "Sıfırlama bağlantısı e-posta adresinize gönderildi"
+    }
+  },
+  "languages": {
+    "tr": "Türkçe",
+    "en": "English",
+    "ar": "العربية"
+  },
+  "footer": {
+    "description": "Doğrulanmış üniversite öğrencileri ile aileler arasında güvenli bir köprü.",
+    "links": {
+      "company": "Şirket",
+      "about": "Hakkımızda",
+      "careers": "Kariyer",
+      "press": "Basın",
+      "support": "Destek",
+      "help": "Yardım Merkezi",
+      "safety": "Güvenlik",
+      "contact": "İletişim",
+      "legal": "Yasal",
+      "terms": "Kullanım Koşulları",
+      "privacy": "Gizlilik Politikası",
+      "cookies": "Çerez Politikası"
+    },
+    "copyright": "© {{year}} KampusAbla. Tüm hakları saklıdır."
+  }
+}
