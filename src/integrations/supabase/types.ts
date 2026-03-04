@@ -108,7 +108,22 @@ export type Database = {
           total_amount?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_bookings_parent"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "parents"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_bookings_sitter"
+            columns: ["sitter_id"]
+            isOneToOne: false
+            referencedRelation: "sitters"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       child_reviews: {
         Row: {
@@ -212,6 +227,30 @@ export type Database = {
           id?: string
           status?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      data_access_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -343,6 +382,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_need_applications_sitter"
+            columns: ["sitter_id"]
+            isOneToOne: false
+            referencedRelation: "sitters"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "need_applications_need_post_id_fkey"
             columns: ["need_post_id"]
             isOneToOne: false
@@ -439,7 +485,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_need_posts_parent"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "parents"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -946,6 +1000,7 @@ export type Database = {
           transcript_url: string | null
           university_email: string | null
           updated_at: string
+          verification_status: string | null
         }
         Insert: {
           background_check_status?: string | null
@@ -960,6 +1015,7 @@ export type Database = {
           transcript_url?: string | null
           university_email?: string | null
           updated_at?: string
+          verification_status?: string | null
         }
         Update: {
           background_check_status?: string | null
@@ -974,6 +1030,7 @@ export type Database = {
           transcript_url?: string | null
           university_email?: string | null
           updated_at?: string
+          verification_status?: string | null
         }
         Relationships: [
           {
@@ -1135,6 +1192,77 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          category: string | null
+          closed_at: string | null
+          created_at: string
+          id: string
+          message: string | null
+          status: string | null
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ticket_responses: {
+        Row: {
+          created_at: string
+          id: string
+          is_staff: boolean | null
+          message: string
+          ticket_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_staff?: boolean | null
+          message: string
+          ticket_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_staff?: boolean | null
+          message?: string
+          ticket_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_responses_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
@@ -1179,26 +1307,89 @@ export type Database = {
           },
         ]
       }
+      user_fcm_tokens: {
+        Row: {
+          created_at: string
+          device_info: Json | null
+          id: string
+          last_used_at: string | null
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          last_used_at?: string | null
+          token: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          last_used_at?: string | null
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string
           id: string
+          language: string | null
           notification_preferences: Json | null
+          privacy_settings: Json | null
+          theme: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          language?: string | null
           notification_preferences?: Json | null
+          privacy_settings?: Json | null
+          theme?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          language?: string | null
           notification_preferences?: Json | null
+          privacy_settings?: Json | null
+          theme?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_suspensions: {
+        Row: {
+          created_at: string
+          id: string
+          lifted_at: string | null
+          reason: string | null
+          suspended_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lifted_at?: string | null
+          reason?: string | null
+          suspended_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lifted_at?: string | null
+          reason?: string | null
+          suspended_at?: string | null
           user_id?: string
         }
         Relationships: []
