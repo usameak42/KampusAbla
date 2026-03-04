@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          cancelled_at: string | null
+          completed_at: string | null
+          id: string
+          metadata: Json | null
+          reason: string | null
+          requested_at: string | null
+          scheduled_deletion_date: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          completed_at?: string | null
+          id?: string
+          metadata?: Json | null
+          reason?: string | null
+          requested_at?: string | null
+          scheduled_deletion_date: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          completed_at?: string | null
+          id?: string
+          metadata?: Json | null
+          reason?: string | null
+          requested_at?: string | null
+          scheduled_deletion_date?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       booking_children: {
         Row: {
           booking_id: string
@@ -495,6 +531,48 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          booking_cancellations: boolean | null
+          booking_confirmations: boolean | null
+          booking_requests: boolean | null
+          created_at: string | null
+          id: string
+          marketing: boolean | null
+          messages: boolean | null
+          reviews: boolean | null
+          session_updates: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          booking_cancellations?: boolean | null
+          booking_confirmations?: boolean | null
+          booking_requests?: boolean | null
+          created_at?: string | null
+          id?: string
+          marketing?: boolean | null
+          messages?: boolean | null
+          reviews?: boolean | null
+          session_updates?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          booking_cancellations?: boolean | null
+          booking_confirmations?: boolean | null
+          booking_requests?: boolean | null
+          created_at?: string | null
+          id?: string
+          marketing?: boolean | null
+          messages?: boolean | null
+          reviews?: boolean | null
+          session_updates?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           action_label: string | null
@@ -651,6 +729,36 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_tracking: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          identifier: string
+          request_count: number
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          identifier: string
+          request_count?: number
+          updated_at?: string
+          window_start: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          identifier?: string
+          request_count?: number
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
           booking_id: string | null
@@ -744,6 +852,50 @@ export type Database = {
             columns: ["review_id"]
             isOneToOne: false
             referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_requests: {
+        Row: {
+          created_at: string | null
+          deadline: string
+          id: string
+          parent_id: string
+          parent_submitted: boolean | null
+          session_id: string
+          sitter_id: string
+          sitter_submitted: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deadline: string
+          id?: string
+          parent_id: string
+          parent_submitted?: boolean | null
+          session_id: string
+          sitter_id: string
+          sitter_submitted?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deadline?: string
+          id?: string
+          parent_id?: string
+          parent_submitted?: boolean | null
+          session_id?: string
+          sitter_id?: string
+          sitter_submitted?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_requests_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -1396,10 +1548,84 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      analytics_completion_rate: {
+        Row: {
+          accepted_count: number | null
+          completed_count: number | null
+          completion_percentage: number | null
+          week_start: string | null
+        }
+        Relationships: []
+      }
+      analytics_time_to_match: {
+        Row: {
+          avg_hours_to_match: number | null
+          booking_date: string | null
+          total_matched_bookings: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      check_notification_preferences: {
+        Args: { p_notification_type: string; p_user_id: string }
+        Returns: boolean
+      }
+      cleanup_old_audit_logs: { Args: never; Returns: undefined }
+      cleanup_old_notifications: { Args: never; Returns: undefined }
+      cleanup_rate_limit_data: { Args: never; Returns: undefined }
+      confirm_booking_payment: {
+        Args: {
+          p_payment_gateway_id: string
+          p_payment_method?: string
+          p_transaction_id: string
+        }
+        Returns: boolean
+      }
+      create_booking_with_transaction: {
+        Args: {
+          p_child_id: string
+          p_end_time: string
+          p_hourly_rate: number
+          p_notes?: string
+          p_parent_id: string
+          p_sitter_id: string
+          p_start_time: string
+          p_total_amount: number
+        }
+        Returns: Json
+      }
+      detect_contact_info: { Args: { content: string }; Returns: string }
+      get_admin_analytics_summary: {
+        Args: { end_date?: string; start_date?: string }
+        Returns: {
+          active_users: number
+          avg_match_hours: number
+          bookings_count: number
+          completion_rate: number
+          repeat_booking_rate: number
+          total_revenue: number
+        }[]
+      }
+      increment_rate_limit: {
+        Args: {
+          p_action: string
+          p_identifier: string
+          p_max_requests: number
+          p_window_start: string
+        }
+        Returns: {
+          request_count: number
+        }[]
+      }
+      rollback_booking_payment: {
+        Args: {
+          p_booking_id: string
+          p_reason?: string
+          p_transaction_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

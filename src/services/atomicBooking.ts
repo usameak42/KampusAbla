@@ -62,7 +62,7 @@ export async function createBookingWithPayment(
         // Step 1: Create booking + transaction atomically
         const { data: result, error: rpcError } = await CriticalFlows.trackBookingCreation(
             () =>
-            supabase.rpc(
+            (supabase as any).rpc(
                     'create_booking_with_transaction',
                     {
                         p_parent_id: data.parentId,
