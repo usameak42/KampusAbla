@@ -65,7 +65,7 @@ export function useSearchSitters({
                                 sortBy === "distance" ? "distance" : "relevance"
                 };
 
-                const { data, error } = await supabase.rpc("search_sitters_by_location" as any, rpcParams);
+                const { data, error } = await (supabase as any).rpc("search_sitters_by_location", rpcParams);
 
                 if (error) throw error;
 
