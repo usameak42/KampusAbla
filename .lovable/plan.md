@@ -1,47 +1,23 @@
 
 
-## Fix: Remove Static Firebase Import Causing WebSocket Crash
+# Fix: White/Blank Pages
 
-### Problem
-`src/services/notifications.ts` line 2 statically imports `firebase/messaging`:
-```ts
-import { getToken, onMessage, MessagePayload } from "firebase/messaging";
-```
-This executes immediately on app load (because `NotificationContext` → `App.tsx` imports it). The `firebase/messaging` module internally tries to open a WebSocket, which fails in sandboxed iframes and crashes the entire app with "WebSocket not available".
+## Problem
+The app calls `validateEnv()` in `main.tsx` before rendering. This function requires `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` to be set. Since no Supabase project is connected, these are undefined, causing the validation to throw an error and crash the app — resulting in a blank white page on every route.
 
-The lazy dynamic import in `firebase.ts` is correct but irrelevant — the damage is already done by this static import in `notifications.ts`.
+Additionally, the Supabase client (`src/integrations/supabase/client.ts`) is created with `undefined` values, which also causes errors when any component tries to use auth.
 
-### Changes
+## Solution
 
-**File: `src/services/notifications.ts`**
+1. **Make env validation non-fatal in development** — Change `validateEnv()` to log a warning instead of throwing when Supabase vars are missing in non-production mode.
 
-1. Remove the static import of `getToken`, `onMessage` from `"firebase/messaging"`
-2. Keep only the `type` import for `Messaging` and `MessagePayload` (type-only imports are erased at compile time, so they never trigger module execution)
-3. Dynamically import `getToken` and `onMessage` inside the methods that need them (`getToken()` method and `setupForegroundListener()` method)
+2. **Add fallback values in Supabase client** — Provide placeholder URL/key so `createClient` doesn't crash (it will fail gracefully on actual API calls instead of on initialization).
 
-```ts
-// BEFORE (crashes):
-import { getToken, onMessage, MessagePayload } from "firebase/messaging";
+3. **Handle AuthContext gracefully** — When Supabase isn't configured, set `loading` to `false` and `user` to `null` immediately so the landing page renders.
 
-// AFTER (safe):
-import type { Messaging, MessagePayload } from "firebase/messaging";
-// getToken and onMessage will be dynamically imported where used
-```
+## Files to Change
 
-In the `getToken()` method:
-```ts
-const { getToken: fbGetToken } = await import("firebase/messaging");
-const currentToken = await fbGetToken(msg, { vapidKey: this.vapidKey });
-```
-
-In the `setupForegroundListener()` method:
-```ts
-this.getMessagingInstance().then(async (msg) => {
-    if (!msg || unsubscribed) return;
-    const { onMessage: fbOnMessage } = await import("firebase/messaging");
-    innerUnsub = fbOnMessage(msg, callback);
-}).catch(() => { /* silently degrade */ });
-```
-
-No other files need changes. This is a 1-file fix.
+- **`src/lib/env.ts`** — Warn instead of throw for missing Supabase vars in dev
+- **`src/integrations/supabase/client.ts`** — Add fallback placeholder values
+- **`src/contexts/AuthContext.tsx`** — Gracefully handle Supabase connection failure
 
