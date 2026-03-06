@@ -20,6 +20,7 @@ export function useAuthentication() {
                 title: "Welcome back!",
                 description: "You've successfully signed in.",
             });
+            return result;
         } catch (error) {
             toast({
                 title: "Sign in failed",
