@@ -64,14 +64,11 @@ export default function VerificationQueue() {
                     *,
                     sitters (
                         full_name,
-                        university,
-                        users (
-                            email
-                        )
+                        university
                     )
                 `)
                 .eq("verification_status", "pending")
-                .order("submitted_at", { ascending: true });
+                .order("created_at", { ascending: true });
 
             if (error) throw error;
 
