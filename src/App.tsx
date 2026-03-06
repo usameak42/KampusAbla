@@ -70,6 +70,7 @@ const HowItWorksPage = lazy(() => import("./pages/about/HowItWorksPage"));
 const DisputesPage = lazy(() => import("./pages/disputes/DisputesPage"));
 const DisputeIntakePage = lazy(() => import("./pages/disputes/DisputeIntakePage"));
 const DisputeHistoryPage = lazy(() => import("./pages/disputes/DisputeHistoryPage"));
+const SitterProfile = lazy(() => import("./pages/profile/SitterProfile"));
 
 import { z } from "zod";
 import { customErrorMap } from "@/lib/zod-error-map";
