@@ -258,8 +258,8 @@ export default function ReportsQueue() {
                                                 <Badge variant="outline">{report.reason}</Badge>
                                             </TableCell>
                                             <TableCell>{getStatusBadge(report.status)}</TableCell>
-                                            <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate" title={report.admin_notes}>
-                                                {report.admin_notes || "-"}
+                                            <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                                                -
                                             </TableCell>
                                         </TableRow>
                                     ))}
