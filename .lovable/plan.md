@@ -1,47 +1,52 @@
 
 
-## Fix: Remove Static Firebase Import Causing WebSocket Crash
+## Root Cause Analysis
 
-### Problem
-`src/services/notifications.ts` line 2 statically imports `firebase/messaging`:
-```ts
-import { getToken, onMessage, MessagePayload } from "firebase/messaging";
-```
-This executes immediately on app load (because `NotificationContext` → `App.tsx` imports it). The `firebase/messaging` module internally tries to open a WebSocket, which fails in sandboxed iframes and crashes the entire app with "WebSocket not available".
+There are **3 distinct problems** causing your published site to break:
 
-The lazy dynamic import in `firebase.ts` is correct but irrelevant — the damage is already done by this static import in `notifications.ts`.
+### Problem 1: CSP Meta Tag (index.html line 10-11)
+The Content-Security-Policy meta tag has multiple issues:
+- `frame-ancestors` and `report-uri` are **ignored** in `<meta>` tags (only work via HTTP headers)
+- `%VITE_SUPABASE_URL%` is never resolved — Vite uses `import.meta.env`, not `%VAR%` syntax in HTML
+- `script-src 'self'` blocks Lovable's inline scripts → **white page**
+- No `font-src` directive → fonts from `cdn.gpteng.co` are blocked
 
-### Changes
+**Fix:** Replace the entire CSP meta tag with a corrected version:
+- Remove `frame-ancestors` and `report-uri`
+- Add `'unsafe-inline'` to `script-src`
+- Add `font-src 'self' https://cdn.gpteng.co`
+- Remove the unresolvable `%VITE_SUPABASE_URL%` reference
 
-**File: `src/services/notifications.ts`**
+### Problem 2: `validateEnv()` throws in production (src/lib/env.ts lines 29-30, 44-47)
+Two crash points:
+1. Line 30: If `VITE_SUPABASE_URL` is missing → throws (this causes `supabaseUrl is required`)
+2. Lines 44-47: Throws for missing optional keys like `VITE_PAYMENT_API_KEY`, `VITE_SENTRY_DSN`
 
-1. Remove the static import of `getToken`, `onMessage` from `"firebase/messaging"`
-2. Keep only the `type` import for `Messaging` and `MessagePayload` (type-only imports are erased at compile time, so they never trigger module execution)
-3. Dynamically import `getToken` and `onMessage` inside the methods that need them (`getToken()` method and `setupForegroundListener()` method)
+**Fix:** Change both `throw` statements to `console.warn`. The app should degrade gracefully, not crash entirely.
 
-```ts
-// BEFORE (crashes):
-import { getToken, onMessage, MessagePayload } from "firebase/messaging";
+### Problem 3: Supabase env vars not reaching the published build
+The `"supabaseUrl is required"` error means `VITE_SUPABASE_URL` is `undefined` at runtime in the published build. The `.env` file exists but its values may not be getting bundled into the production build properly. This is likely a downstream effect of the CSP blocking scripts — once the inline script is blocked, the entire app module fails to load, and the Supabase client initialization crashes.
 
-// AFTER (safe):
-import type { Messaging, MessagePayload } from "firebase/messaging";
-// getToken and onMessage will be dynamically imported where used
-```
+**Fix:** Problems 1 and 2 above should resolve this. The `.env` values are correct and Vite should bundle them. The CSP script block is preventing the app from even loading.
 
-In the `getToken()` method:
-```ts
-const { getToken: fbGetToken } = await import("firebase/messaging");
-const currentToken = await fbGetToken(msg, { vapidKey: this.vapidKey });
-```
+## Implementation Plan
 
-In the `setupForegroundListener()` method:
-```ts
-this.getMessagingInstance().then(async (msg) => {
-    if (!msg || unsubscribed) return;
-    const { onMessage: fbOnMessage } = await import("firebase/messaging");
-    innerUnsub = fbOnMessage(msg, callback);
-}).catch(() => { /* silently degrade */ });
-```
+### Step 1: Fix CSP meta tag in `index.html`
+Replace line 10-11 with a corrected CSP that:
+- Allows `'unsafe-inline'` in `script-src` (needed for Lovable preview and Vite)
+- Adds `font-src 'self' https://cdn.gpteng.co`
+- Removes unsupported `frame-ancestors` and `report-uri`
+- Removes broken `%VITE_SUPABASE_URL%`
 
-No other files need changes. This is a 1-file fix.
+### Step 2: Fix `src/lib/env.ts` to warn instead of throw
+- Line 30: Change `throw` to `console.warn` + `return`
+- Lines 44-47: Change `throw` to `console.warn` (production optional keys)
+
+Both changes ensure the app boots even when optional services aren't configured.
+
+### Files changed
+| File | Change |
+|------|--------|
+| `index.html` | Fix CSP meta tag |
+| `src/lib/env.ts` | Replace throws with warnings |
 
