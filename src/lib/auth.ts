@@ -11,11 +11,11 @@ export function getUserRole(user: any): string | null {
 
 /**
  * Checks if the user has an administrative role.
+ * Admin access is determined exclusively by the role in user metadata (role-based access control).
+ * No client-side backdoor is allowed regardless of environment.
  */
 export function isUserAdmin(user: any): boolean {
-    const isActualAdmin = getUserRole(user) === "admin";
-    const isDemoAdmin = import.meta.env.DEV && localStorage.getItem("ka_demo_admin") === "true";
-    return isActualAdmin || isDemoAdmin;
+    return getUserRole(user) === "admin";
 }
 
 /**

@@ -102,6 +102,7 @@ const MySitterPosts = lazy(() => import("./pages/sitter-posts/MySitterPosts"));
 // const SystemConfiguration = lazy(() => import("./pages/admin/SystemConfiguration"));
 
 import { AdminRoute } from "./components/auth/AdminRoute";
+import { PrivateRoute } from "./components/auth/PrivateRoute";
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -151,74 +152,73 @@ const App = () => (
               <Suspense fallback={<LoadingScreen />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
-                  {/* Need Posts Routes */}
+                  {/* Need Posts Routes - auth required for management */}
                   <Route path="/needs" element={<BrowseNeeds />} />
-                  <Route path="/my-needs" element={<MyNeedPosts />} />
-                  <Route path="/my-needs/:needPostId/applications" element={<ViewApplications />} />
+                  <Route path="/need-posts" element={<BrowseNeeds />} />
+                  <Route path="/my-needs" element={<PrivateRoute><MyNeedPosts /></PrivateRoute>} />
+                  <Route path="/my-needs/:needPostId/applications" element={<PrivateRoute><ViewApplications /></PrivateRoute>} />
                   {/* Bookings Routes */}
-                  <Route path="/bookings" element={<MyBookings />} />
-                  <Route path="/calendar" element={<CalendarPage />} />
+                  <Route path="/bookings" element={<PrivateRoute><MyBookings /></PrivateRoute>} />
+                  <Route path="/calendar" element={<PrivateRoute><CalendarPage /></PrivateRoute>} />
 
                   {/* Sidebar Aliases */}
-                  <Route path="/dashboard" element={<FindSitters />} /> {/* Fallback for dashboard */}
-                  <Route path="/need-posts" element={<BrowseNeeds />} />
-                  <Route path="/my-sessions" element={<MyBookings />} />
-                  <Route path="/sessions" element={<MyBookings />} />
-                  <Route path="/stats" element={<EarningsPage />} /> {/* Sitter stats usually earnings */}
-                  <Route path="/statistics" element={<EarningsPage />} />
+                  <Route path="/dashboard" element={<PrivateRoute><FindSitters /></PrivateRoute>} />
+                  <Route path="/my-sessions" element={<PrivateRoute><MyBookings /></PrivateRoute>} />
+                  <Route path="/sessions" element={<PrivateRoute><MyBookings /></PrivateRoute>} />
+                  <Route path="/stats" element={<PrivateRoute><EarningsPage /></PrivateRoute>} />
+                  <Route path="/statistics" element={<PrivateRoute><EarningsPage /></PrivateRoute>} />
                   {/* Session Routes */}
-                  <Route path="/session/:sessionId" element={<ActiveSession />} />
-                  <Route path="/session" element={<ActiveSession />} />
+                  <Route path="/session/:sessionId" element={<PrivateRoute><ActiveSession /></PrivateRoute>} />
+                  <Route path="/session" element={<PrivateRoute><ActiveSession /></PrivateRoute>} />
 
                   {/* Parent Routes */}
-                  <Route path="/safety" element={<SafetyCenter />} />
+                  <Route path="/safety" element={<PrivateRoute><SafetyCenter /></PrivateRoute>} />
                   {/* Chat Routes */}
-                  <Route path="/messages" element={<MessagesPage />} />
-                  <Route path="/messages/:conversationId" element={<MessagesPage />} />
+                  <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
+                  <Route path="/messages/:conversationId" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
                   {/* Children Routes */}
-                  <Route path="/children" element={<ChildrenPage />} />
-                  {/* Review Routes */}
-                  <Route path="/review/:sessionId" element={<ReviewPage />} />
+                  <Route path="/children" element={<PrivateRoute><ChildrenPage /></PrivateRoute>} />
+                  {/* Review Routes - reading reviews is public, writing requires auth */}
+                  <Route path="/review/:sessionId" element={<PrivateRoute><ReviewPage /></PrivateRoute>} />
                   <Route path="/reviews/:sitterId" element={<SitterReviewsPage />} />
                   {/* Notifications Routes */}
-                  <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/notifications" element={<PrivateRoute><NotificationsPage /></PrivateRoute>} />
                   {/* Settings Routes */}
-                  <Route path="/settings" element={<SettingsPage />} />
-                  {/* Legal Routes */}
+                  <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
+                  {/* Legal Routes - public */}
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/kvkk" element={<KVKKPage />} />
                   <Route path="/cookies" element={<CookiePolicy />} />
                   {/* Subscription Routes */}
-                  <Route path="/subscription" element={<SubscriptionPage />} />
-                  {/* Help Routes */}
+                  <Route path="/subscription" element={<PrivateRoute><SubscriptionPage /></PrivateRoute>} />
+                  {/* Help Routes - public */}
                   <Route path="/help" element={<HelpPage />} />
                   {/* Dispute Routes */}
-                  <Route path="/disputes" element={<DisputesPage />} />
-
-                  <Route path="/disputes/history" element={<DisputeHistoryPage />} />
-                  {/* About Routes */}
+                  <Route path="/disputes" element={<PrivateRoute><DisputesPage /></PrivateRoute>} />
+                  <Route path="/disputes/history" element={<PrivateRoute><DisputeHistoryPage /></PrivateRoute>} />
+                  {/* About Routes - public */}
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/how-it-works" element={<HowItWorksPage />} />
-                  {/* Search Routes */}
+                  {/* Search Routes - public (browse without login) */}
                   <Route path="/find-sitter" element={<FindSitters />} />
-                  {/* Registration Routes */}
+                  {/* Registration Routes - public */}
                   <Route path="/register" element={<RoleSelection />} />
                   <Route path="/register/parent" element={<ParentRegistration />} />
                   <Route path="/register/sitter" element={<SitterRegistration />} />
-                  {/* Verification Routes */}
-                  <Route path="/verification" element={<SitterVerification />} />
-                  <Route path="/verify-phone" element={<VerifyPhone />} />
-                  {/* Sitter Routes */}
-                  <Route path="/book/:sitterId" element={<PaymentCheckoutPage />} />
-                  <Route path="/checkout/confirmation" element={<PaymentConfirmationPage />} />
+                  {/* Verification Routes - auth required */}
+                  <Route path="/verification" element={<PrivateRoute><SitterVerification /></PrivateRoute>} />
+                  <Route path="/verify-phone" element={<PrivateRoute><VerifyPhone /></PrivateRoute>} />
+                  {/* Sitter & Payment Routes */}
+                  <Route path="/book/:sitterId" element={<PrivateRoute><PaymentCheckoutPage /></PrivateRoute>} />
+                  <Route path="/checkout/confirmation" element={<PrivateRoute><PaymentConfirmationPage /></PrivateRoute>} />
                   <Route path="/sitters/:sitterId" element={<SitterProfilePage />} />
                   <Route path="/sitter/:sitterId" element={<SitterProfilePage />} />
-                  <Route path="/favorites" element={<FavoritesPage />} />
-                  <Route path="/earnings" element={<EarningsPage />} />
-                  <Route path="/earnings/history" element={<PayoutHistoryPage />} />
-                  <Route path="/my-sitter-posts" element={<MySitterPosts />} />
-                  <Route path="/checkout/receipt" element={<PaymentReceiptPage />} />
+                  <Route path="/favorites" element={<PrivateRoute><FavoritesPage /></PrivateRoute>} />
+                  <Route path="/earnings" element={<PrivateRoute><EarningsPage /></PrivateRoute>} />
+                  <Route path="/earnings/history" element={<PrivateRoute><PayoutHistoryPage /></PrivateRoute>} />
+                  <Route path="/my-sitter-posts" element={<PrivateRoute><MySitterPosts /></PrivateRoute>} />
+                  <Route path="/checkout/receipt" element={<PrivateRoute><PaymentReceiptPage /></PrivateRoute>} />
 
                   {/* Auth Routes */}
                   <Route path="/login" element={<Login />} />

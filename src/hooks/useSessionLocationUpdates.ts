@@ -5,6 +5,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 import type { LocationCoord } from '@/types/location';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -135,7 +136,7 @@ export function useSessionLocationUpdates(sessionId: string | null) {
                     // Append to history
                     setLocationHistory((prev) => [...prev, newLocation]);
 
-                    console.log('Realtime location update received:', newLocation);
+                    logger.debug('Realtime location update received', { action: 'location.realtime', lat: newLocation.lat, lng: newLocation.lng });
                 }
             )
             .subscribe();

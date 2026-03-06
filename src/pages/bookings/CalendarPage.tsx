@@ -25,7 +25,6 @@ export default function CalendarPage() {
 
     const handleSelectDate = (date: Date) => {
         // Could open a modal or navigate to day view
-        console.log("Selected date:", date);
     };
 
     const handleSelectBooking = (bookingId: string) => {

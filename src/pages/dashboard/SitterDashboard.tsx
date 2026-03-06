@@ -1,9 +1,9 @@
 /**
  * Sitter Dashboard - Main dashboard for sitters
+ * Stats, upcoming sessions, and need posts are fetched live from Supabase.
  */
 
 import { AppLayout } from "@/components/layout/AppLayout";
-import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
@@ -19,88 +19,202 @@ import {
     BarChart3,
     Clock,
     MapPin,
-    AlertCircle
+    AlertCircle,
+    Loader2,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { format, startOfMonth, endOfMonth, startOfDay } from "date-fns";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface SitterStats {
+    sessionsThisMonth: number;
+    totalEarnings: number;
+    pendingPayout: number;
+}
+
+interface UpcomingSession {
+    id: string;
+    childrenNames: string[];
+    parentName: string;
+    bookingDate: string;
+    startTime: string;
+    endTime: string;
+    address: string;
+}
+
+interface NeedPost {
+    id: string;
+    childName: string;
+    parentName: string;
+    date: string;
+    timeRange: string;
+    hourlyRate: number | null;
+}
 
 export default function SitterDashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const sitterId = user?.id;
     const fullName = user?.user_metadata?.full_name || "Bakıcı";
 
-    const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
-    const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-
-    useEffect(() => {
-        const fetchProfile = async () => {
-            if (!user?.id) return;
-            try {
-                const { data } = await supabase
-                    .from("sitters")
-                    .select("verification_status")
-                    .eq("id", user.id)
-                    .single();
-
-                if (data) {
-                    setVerificationStatus(data.verification_status);
-                }
-            } catch (error) {
-                console.error("Error fetching profile:", error);
-            } finally {
-                setIsLoadingProfile(false);
-            }
-        };
-
-        fetchProfile();
-    }, [user?.id]);
+    // ── 1. Verification status (existing real query, migrated to useQuery) ───
+    const { data: verificationStatus, isLoading: isLoadingProfile } = useQuery<string | null>({
+        queryKey: ["sitterVerificationStatus", sitterId],
+        queryFn: async () => {
+            if (!sitterId) return null;
+            const { data } = await supabase
+                .from("sitters")
+                .select("verification_status")
+                .eq("id", sitterId)
+                .single();
+            return data?.verification_status ?? null;
+        },
+        enabled: !!sitterId,
+        staleTime: 5 * 60_000,
+    });
 
     const isVerified = verificationStatus === "verified";
 
-    // TODO: Fetch real data from Supabase
-    const stats = {
-        sessionsThisMonth: 8,
-        totalEarnings: 2400,
-        pendingPayout: 600,
-    };
+    // ── 2. Stats: sessions this month + earnings + pending payout ────────────
+    const { data: stats, isLoading: statsLoading } = useQuery<SitterStats>({
+        queryKey: ["sitterDashboardStats", sitterId],
+        queryFn: async () => {
+            if (!sitterId) return { sessionsThisMonth: 0, totalEarnings: 0, pendingPayout: 0 };
 
-    const upcomingSessions = [
-        {
-            id: 1,
-            childName: "Elif",
-            parentName: "Ahmet Yılmaz",
-            date: "27 Ocak 2026",
-            time: "15:00-17:00",
-            location: "Beşiktaş, İstanbul",
-        },
-        {
-            id: 2,
-            childName: "Ali",
-            parentName: "Fatma Kaya",
-            date: "28 Ocak 2026",
-            time: "14:30-16:30",
-            location: "Kadıköy, İstanbul",
-        },
-    ];
+            const now = new Date();
+            const monthStart = startOfMonth(now).toISOString();
+            const monthEnd = endOfMonth(now).toISOString();
 
-    const needPosts = [
-        {
-            id: 1,
-            childName: "Elif",
-            parentName: "Ahmet Y.",
-            date: "30 Ocak 2026",
-            time: "15:00-18:00",
-            rate: 80,
-            distance: "2.1 km",
+            const [sessionsResult, transactionsResult, payoutsResult] = await Promise.all([
+                // Count completed bookings (= sessions) this calendar month
+                supabase
+                    .from("bookings")
+                    .select("id", { count: "exact", head: true })
+                    .eq("sitter_id", sitterId)
+                    .eq("status", "completed")
+                    .gte("booking_date", monthStart)
+                    .lte("booking_date", monthEnd),
+
+                // Sum all sitter earnings from completed transactions
+                supabase
+                    .from("transactions")
+                    .select("sitter_amount")
+                    .eq("sitter_id", sitterId),
+
+                // Sum pending payouts
+                supabase
+                    .from("payouts")
+                    .select("amount")
+                    .eq("sitter_id", sitterId)
+                    .eq("status", "pending"),
+            ]);
+
+            if (sessionsResult.error) throw sessionsResult.error;
+            if (transactionsResult.error) throw transactionsResult.error;
+            if (payoutsResult.error) throw payoutsResult.error;
+
+            const totalEarnings = (transactionsResult.data || []).reduce(
+                (sum: number, t: any) => sum + (t.sitter_amount ?? 0),
+                0
+            );
+            const pendingPayout = (payoutsResult.data || []).reduce(
+                (sum: number, p: any) => sum + (p.amount ?? 0),
+                0
+            );
+
+            return {
+                sessionsThisMonth: sessionsResult.count ?? 0,
+                totalEarnings,
+                pendingPayout,
+            };
         },
-        {
-            id: 2,
-            childName: "Zeynep",
-            parentName: "Mehmet K.",
-            date: "31 Ocak 2026",
-            time: "16:00-19:00",
-            rate: 75,
-            distance: "3.5 km",
+        enabled: !!sitterId,
+        staleTime: 60_000,
+    });
+
+    // ── 3. Upcoming confirmed bookings (next 5, future dates) ────────────────
+    const { data: upcomingSessions = [], isLoading: sessionsLoading } = useQuery<UpcomingSession[]>({
+        queryKey: ["sitterUpcomingSessions", sitterId],
+        queryFn: async () => {
+            if (!sitterId) return [];
+
+            const today = startOfDay(new Date()).toISOString();
+
+            const { data, error } = await supabase
+                .from("bookings")
+                .select(
+                    `id, booking_date, start_time, duration_hours, meeting_address,
+                     parent:parents(full_name),
+                     children:booking_children(child:children(name))`
+                )
+                .eq("sitter_id", sitterId)
+                .in("status", ["confirmed", "pending"])
+                .gte("booking_date", today)
+                .order("booking_date", { ascending: true })
+                .order("start_time", { ascending: true })
+                .limit(5);
+
+            if (error) throw error;
+
+            return (data || []).map((b: any) => {
+                const startHour = parseInt((b.start_time as string).substring(0, 2), 10);
+                const startMin = parseInt((b.start_time as string).substring(3, 5), 10);
+                const durationMins = Math.round((b.duration_hours ?? 1) * 60);
+                const endTotalMins = startHour * 60 + startMin + durationMins;
+                const endTime = `${String(Math.floor(endTotalMins / 60) % 24).padStart(2, "0")}:${String(endTotalMins % 60).padStart(2, "0")}`;
+
+                return {
+                    id: b.id,
+                    childrenNames: (b.children ?? [])
+                        .map((bc: any) => bc.child?.name)
+                        .filter(Boolean),
+                    parentName: b.parent?.full_name ?? "Veli",
+                    bookingDate: format(new Date(b.booking_date), "d MMMM yyyy"),
+                    startTime: (b.start_time as string).substring(0, 5),
+                    endTime,
+                    address: b.meeting_address ?? "Adres belirtilmemiş",
+                };
+            });
         },
-    ];
+        enabled: !!sitterId,
+        staleTime: 30_000,
+    });
+
+    // ── 4. Open need posts from parents (most recent 5) ───────────────────────
+    const { data: needPosts = [], isLoading: postsLoading } = useQuery<NeedPost[]>({
+        queryKey: ["sitterNeedPosts"],
+        queryFn: async () => {
+            const today = startOfDay(new Date()).toISOString();
+
+            const { data, error } = await supabase
+                .from("need_posts")
+                .select(
+                    `id, date, start_time, end_time, hourly_rate,
+                     parent:parents(full_name),
+                     children:need_post_children(child:children(name))`
+                )
+                .eq("status", "open")
+                .gte("date", today)
+                .order("date", { ascending: true })
+                .limit(5);
+
+            if (error) throw error;
+
+            return (data || []).map((p: any) => ({
+                id: p.id,
+                childName: (p.children ?? [])
+                    .map((nc: any) => nc.child?.name)
+                    .filter(Boolean)
+                    .join(", ") || "Çocuk",
+                parentName: p.parent?.full_name ?? "Veli",
+                date: format(new Date(p.date), "d MMMM yyyy"),
+                timeRange: `${(p.start_time as string).substring(0, 5)}-${(p.end_time as string).substring(0, 5)}`,
+                hourlyRate: p.hourly_rate,
+            }));
+        },
+        staleTime: 60_000,
+    });
 
     return (
         <AppLayout>
@@ -135,23 +249,21 @@ export default function SitterDashboard() {
                 <StatCard
                     icon={Calendar}
                     label="Bu Ay Seans"
-                    value={stats.sessionsThisMonth}
+                    value={statsLoading ? "…" : (stats?.sessionsThisMonth ?? 0)}
                     iconColor="text-green-600"
                     iconBgColor="bg-green-100"
-                    trend={{ value: 12, isPositive: true }}
                 />
                 <StatCard
                     icon={DollarSign}
                     label="Toplam Kazanç"
-                    value={`₺${stats.totalEarnings}`}
+                    value={statsLoading ? "…" : `₺${(stats?.totalEarnings ?? 0).toLocaleString("tr-TR")}`}
                     iconColor="text-blue-600"
                     iconBgColor="bg-blue-100"
-                    trend={{ value: 8, isPositive: true }}
                 />
                 <StatCard
                     icon={Clock}
                     label="Bekleyen Ödeme"
-                    value={`₺${stats.pendingPayout}`}
+                    value={statsLoading ? "…" : `₺${(stats?.pendingPayout ?? 0).toLocaleString("tr-TR")}`}
                     iconColor="text-purple-600"
                     iconBgColor="bg-purple-100"
                 />
@@ -201,12 +313,16 @@ export default function SitterDashboard() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Yaklaşan Seanslar</CardTitle>
-                        <Button variant="ghost" size="sm" onClick={() => navigate("/sessions")}>
+                        <Button variant="ghost" size="sm" onClick={() => navigate("/bookings")}>
                             Tümünü Gör
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        {upcomingSessions.length === 0 ? (
+                        {sessionsLoading ? (
+                            <div className="flex justify-center py-8">
+                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : upcomingSessions.length === 0 ? (
                             <p className="text-center text-muted-foreground py-8">
                                 Yaklaşan seansınız yok
                             </p>
@@ -218,20 +334,26 @@ export default function SitterDashboard() {
                                         className="flex items-start justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                                     >
                                         <div className="space-y-1 flex-1">
-                                            <p className="font-semibold">{session.childName}</p>
+                                            <p className="font-semibold">
+                                                {session.childrenNames.join(", ") || "Çocuk"}
+                                            </p>
                                             <p className="text-sm text-muted-foreground">
                                                 Veli: {session.parentName}
                                             </p>
                                             <p className="text-sm font-medium text-green-600">
-                                                {session.date} • {session.time}
+                                                {session.bookingDate} • {session.startTime}-{session.endTime}
                                             </p>
                                             <p className="text-xs text-muted-foreground flex items-center gap-1">
                                                 <MapPin className="h-3 w-3" />
-                                                {session.location}
+                                                {session.address}
                                             </p>
                                         </div>
-                                        <Button size="sm" className="shrink-0" onClick={() => navigate("/session")}>
-                                            Başlat
+                                        <Button
+                                            size="sm"
+                                            className="shrink-0"
+                                            onClick={() => navigate(`/bookings`)}
+                                        >
+                                            Detaylar
                                         </Button>
                                     </div>
                                 ))}
@@ -249,37 +371,50 @@ export default function SitterDashboard() {
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
-                            {needPosts.map((post) => (
-                                <div
-                                    key={post.id}
-                                    className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                                >
-                                    <div className="flex items-start justify-between mb-2">
-                                        <div>
-                                            <p className="font-semibold">{post.childName}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                Veli: {post.parentName}
-                                            </p>
+                        {postsLoading ? (
+                            <div className="flex justify-center py-8">
+                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : needPosts.length === 0 ? (
+                            <p className="text-center text-muted-foreground py-8">
+                                Şu an uygun ilan bulunmuyor
+                            </p>
+                        ) : (
+                            <div className="space-y-4">
+                                {needPosts.map((post) => (
+                                    <div
+                                        key={post.id}
+                                        className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                                    >
+                                        <div className="flex items-start justify-between mb-2">
+                                            <div>
+                                                <p className="font-semibold">{post.childName}</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Veli: {post.parentName}
+                                                </p>
+                                            </div>
+                                            {post.hourlyRate != null && (
+                                                <div className="text-right">
+                                                    <p className="font-bold text-green-600">₺{post.hourlyRate}</p>
+                                                    <p className="text-xs text-muted-foreground">/saat</p>
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-green-600">₺{post.rate}</p>
-                                            <p className="text-xs text-muted-foreground">/saat</p>
+                                        <div className="flex items-center mt-2 text-xs text-muted-foreground">
+                                            <span>{post.date} • {post.timeRange}</span>
                                         </div>
+                                        <Button
+                                            size="sm"
+                                            className="w-full mt-3"
+                                            variant="outline"
+                                            onClick={() => navigate(`/need-posts/${post.id}`)}
+                                        >
+                                            Başvur
+                                        </Button>
                                     </div>
-                                    <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
-                                        <span>{post.date} • {post.time}</span>
-                                        <span className="flex items-center gap-1">
-                                            <MapPin className="h-3 w-3" />
-                                            {post.distance}
-                                        </span>
-                                    </div>
-                                    <Button size="sm" className="w-full mt-3" variant="outline" onClick={() => navigate("/need-posts")}>
-                                        Başvur
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

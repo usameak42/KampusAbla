@@ -3,7 +3,8 @@
  * Automatically starts/stops GPS tracking for active sessions
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { useLocation } from './useLocation';
 import { locationTrackingService } from '@/services/locationTracking';
 
@@ -13,6 +14,8 @@ interface UseSessionTrackingOptions {
 }
 
 export function useSessionTracking({ sessionId, isActive }: UseSessionTrackingOptions) {
+    const [trackingError, setTrackingError] = useState(false);
+
     const {
         getCurrentPosition,
         startTracking: startGPSTracking,
@@ -41,8 +44,14 @@ export function useSessionTracking({ sessionId, isActive }: UseSessionTrackingOp
         );
 
         if (!success) {
-            console.error('Failed to start location tracking');
-            // TODO: Show user error notification
+            setTrackingError(true);
+            toast.error(
+                'Konum takibi başlatılamadı. GPS izninizi kontrol edin.',
+                { duration: 8000 }
+            );
+        } else {
+            // Clear any previous error on successful start
+            setTrackingError(false);
         }
     }, [sessionId, isActive, startGPSTracking, getCurrentPosition]);
 
@@ -74,6 +83,7 @@ export function useSessionTracking({ sessionId, isActive }: UseSessionTrackingOp
         isTracking: isGPSActive && locationTrackingService.isTracking(),
         isLocationEnabled: permissionStatus === 'granted',
         locationError,
+        trackingError,
         startTracking: startSessionTracking,
         stopTracking: stopSessionTracking,
     };

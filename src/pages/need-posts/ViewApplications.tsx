@@ -87,19 +87,11 @@ export default function ViewApplications() {
     };
 
     const handleViewProfile = (sitterId: string) => {
-        // TODO: Navigate to sitter profile
-        toast({
-            title: "Profil",
-            description: "Bakıcı profil sayfası yakında eklenecek.",
-        });
+        navigate(`/sitters/${sitterId}`);
     };
 
     const handleMessage = (sitterId: string) => {
-        // TODO: Navigate to chat
-        toast({
-            title: "Mesaj",
-            description: "Mesajlaşma özelliği yakında eklenecek.",
-        });
+        navigate(`/messages?recipientId=${sitterId}`);
     };
 
     return (

@@ -1,5 +1,6 @@
 import { getFirebaseMessaging } from "@/lib/firebase";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 import type { Messaging, MessagePayload } from "firebase/messaging";
 
 /**
@@ -142,11 +143,11 @@ export class NotificationService {
     }
 
     async subscribeToTopic(topic: string): Promise<void> {
-        console.log(`Subscribed to topic: ${topic}`);
+        logger.info(`Subscribed to topic: ${topic}`, { action: 'notification.topic.subscribe', topic });
     }
 
     async sendNotification(userId: string, notification: NotificationPayload): Promise<void> {
-        console.log(`Sending push notification to ${userId}:`, notification);
+        logger.info('Sending push notification', { action: 'notification.send', userId });
     }
 
     async createInAppNotification(payload: {

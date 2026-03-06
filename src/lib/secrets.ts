@@ -118,7 +118,7 @@ export class SecretsManager {
         }
 
         this.validated = true;
-        console.log('✅ All required secrets validated');
+        // Secrets validated successfully — no logging here to avoid circular dependency with logger
     }
 
     /**

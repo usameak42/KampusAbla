@@ -24,6 +24,9 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { STATUS_INFO, type SessionStatus } from "@/types/session";
+import { useSessionTracking } from "@/hooks/useSessionTracking";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 export default function ActiveSession() {
     const { sessionId } = useParams();
@@ -35,6 +38,13 @@ export default function ActiveSession() {
 
     // Determine view mode based on user role
     const viewMode: "parent" | "sitter" = user?.user_metadata?.role === "sitter" ? "sitter" : "parent";
+
+    // GPS Tracking — auto-starts when session is active; exposes error state for the UI
+    const isSessionActive = !!(session && (["started", "picked_up", "arrived"] as string[]).includes(session.currentStatus));
+    const { trackingError } = useSessionTracking({
+        sessionId: sessionId ?? null,
+        isActive: isSessionActive,
+    });
 
     if (!session) {
         return (
@@ -86,6 +96,16 @@ export default function ActiveSession() {
 
     return (
         <div className="container mx-auto py-6 space-y-6 pb-24">
+            {/* GPS Tracking Error Alert */}
+            {trackingError && (
+                <Alert className="border-orange-200 bg-orange-50">
+                    <AlertTriangle className="h-4 w-4 text-orange-600" />
+                    <AlertDescription className="text-orange-800">
+                        <strong>Konum Takibi Devre Dışı:</strong> GPS takibi başlatılamadı.
+                        Konum izninizi kontrol edin — ebeveyn canlı konumunuzu göremeyebilir.
+                    </AlertDescription>
+                </Alert>
+            )}
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

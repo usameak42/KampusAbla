@@ -1,6 +1,9 @@
 /**
- * Cancellation policy utilities.
+ * Cancellation policy utilities — implements the KA-050 4-bucket model.
+ * Threshold values are defined in src/config/constants.ts (CANCELLATION_WINDOWS).
  */
+
+import { CANCELLATION_WINDOWS } from "@/config/constants";
 
 export type CancellationWindow = "grace_period" | "more_than_12_hours" | "between_12_and_3_hours" | "less_than_3_hours";
 
@@ -42,8 +45,8 @@ export function calculateCancellationPolicy({
     const hoursUntilStart = diffMs / HOURS_IN_MS;
     const minutesSinceCreation = (now.getTime() - new Date(bookingCreatedAt).getTime()) / MINUTES_IN_MS;
 
-    // Bucket A: Grace Period (< 10 mins since creation)
-    if (minutesSinceCreation <= 10) {
+    // Bucket A: Grace Period (<= GRACE_PERIOD_MINUTES since creation)
+    if (minutesSinceCreation <= CANCELLATION_WINDOWS.GRACE_PERIOD_MINUTES) {
         return {
             hoursUntilStart,
             minutesSinceCreation,
@@ -54,8 +57,8 @@ export function calculateCancellationPolicy({
         };
     }
 
-    // Bucket B: Advance Notice (> 12 hours)
-    if (hoursUntilStart >= 12) {
+    // Bucket B: Advance Notice (> FREE_HOURS hours)
+    if (hoursUntilStart >= CANCELLATION_WINDOWS.FREE_HOURS) {
         return {
             hoursUntilStart,
             minutesSinceCreation,
@@ -66,14 +69,12 @@ export function calculateCancellationPolicy({
         };
     }
 
-    // Bucket C: Standard Late (3h <= t < 12h)
-    // Note: Usage limits (2/mo) would be checked here in a real backend. 
+    // Bucket C: Standard Late (LATE_HOURS <= t < FREE_HOURS)
+    // Note: Usage limits (2/mo) would be checked here in a real backend.
     // For FE logic, we treat as warning/fee potential, but here mapping to standard policy.
-    // If strict compliance with "Limit: 2/mo. Else: Fee" is needed, we'd need that data.
-    // Assuming for now it falls into the "Free" tier if within limit, but if we want to be safe or simple
-    // we can apply a small fee or keep it free if that's the default "happy path".
+    // Assuming for now it falls into the "Free" tier if within limit.
     // Backlog says "Free cancel. Limit: 2/mo". So default is Free.
-    if (hoursUntilStart >= 3) {
+    if (hoursUntilStart >= CANCELLATION_WINDOWS.LATE_HOURS) {
         return {
             hoursUntilStart,
             minutesSinceCreation,
@@ -84,13 +85,13 @@ export function calculateCancellationPolicy({
         };
     }
 
-    // Bucket D: Very Late (< 3h) -> Fee always
+    // Bucket D: Very Late (< LATE_HOURS) -> Fee always
     return {
         hoursUntilStart,
         minutesSinceCreation,
         cancellationWindow: "less_than_3_hours",
-        feeRate: 1, // 100% Fee
-        feeAmount: Math.round(totalAmount),
+        feeRate: CANCELLATION_WINDOWS.LATE_FEE_RATE,
+        feeAmount: Math.round(totalAmount * CANCELLATION_WINDOWS.LATE_FEE_RATE),
         refundAmount: 0,
     };
 }

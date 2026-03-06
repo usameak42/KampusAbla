@@ -2,7 +2,7 @@
  * useSettings Hook - Manages user settings
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type {
     UserSettings,
     UserProfile,
@@ -21,6 +21,7 @@ import {
     DEFAULT_PRIVACY_SETTINGS,
     DEFAULT_SECURITY_SETTINGS,
 } from "@/types/settings";
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock user settings
 const MOCK_SETTINGS: UserSettings = {
@@ -101,6 +102,48 @@ export function useSettings({ userId }: UseSettingsOptions) {
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Load persisted notification + privacy settings from Supabase
+    const loadFromDB = useCallback(async () => {
+        if (!userId) return;
+        setIsLoading(true);
+        try {
+            const { data, error: fetchError } = await supabase
+                .from("user_settings")
+                .select("notification_preferences, privacy_settings")
+                .eq("user_id", userId)
+                .maybeSingle();
+
+            if (fetchError) throw fetchError;
+
+            if (data) {
+                setSettings((prev) => ({
+                    ...prev,
+                    notifications: {
+                        ...DEFAULT_NOTIFICATION_PREFS,
+                        ...(typeof data.notification_preferences === "object"
+                            ? (data.notification_preferences as Partial<NotificationPreferences>)
+                            : {}),
+                    },
+                    privacy: {
+                        ...DEFAULT_PRIVACY_SETTINGS,
+                        ...(typeof data.privacy_settings === "object"
+                            ? (data.privacy_settings as Partial<PrivacySettings>)
+                            : {}),
+                    },
+                }));
+            }
+        } catch (err) {
+            console.error("Error loading user settings:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [userId]);
+
+    // Load on mount
+    useEffect(() => {
+        loadFromDB();
+    }, [loadFromDB]);
+
     // Update profile
     const updateProfile = useCallback(
         async (data: Partial<UserProfile>): Promise<void> => {
@@ -130,11 +173,20 @@ export function useSettings({ userId }: UseSettingsOptions) {
             setIsSaving(true);
             setError(null);
             try {
-                await new Promise((resolve) => setTimeout(resolve, 300));
+                const merged = { ...settings.notifications, ...data };
+
+                const { error: upsertError } = await supabase
+                    .from("user_settings")
+                    .upsert(
+                        { user_id: userId, notification_preferences: merged as any },
+                        { onConflict: "user_id" }
+                    );
+
+                if (upsertError) throw upsertError;
 
                 setSettings((prev) => ({
                     ...prev,
-                    notifications: { ...prev.notifications, ...data },
+                    notifications: merged,
                 }));
             } catch (err) {
                 setError("Bildirim ayarları güncellenemedi");
@@ -143,7 +195,7 @@ export function useSettings({ userId }: UseSettingsOptions) {
                 setIsSaving(false);
             }
         },
-        []
+        [userId, settings.notifications]
     );
 
     // Update privacy settings
@@ -152,11 +204,20 @@ export function useSettings({ userId }: UseSettingsOptions) {
             setIsSaving(true);
             setError(null);
             try {
-                await new Promise((resolve) => setTimeout(resolve, 300));
+                const merged = { ...settings.privacy, ...data };
+
+                const { error: upsertError } = await supabase
+                    .from("user_settings")
+                    .upsert(
+                        { user_id: userId, privacy_settings: merged as any },
+                        { onConflict: "user_id" }
+                    );
+
+                if (upsertError) throw upsertError;
 
                 setSettings((prev) => ({
                     ...prev,
-                    privacy: { ...prev.privacy, ...data },
+                    privacy: merged,
                 }));
             } catch (err) {
                 setError("Gizlilik ayarları güncellenemedi");
@@ -165,7 +226,7 @@ export function useSettings({ userId }: UseSettingsOptions) {
                 setIsSaving(false);
             }
         },
-        []
+        [userId, settings.privacy]
     );
 
     // Update security settings
@@ -440,16 +501,10 @@ export function useSettings({ userId }: UseSettingsOptions) {
         []
     );
 
-    // Refresh settings
+    // Refresh settings — reloads from Supabase
     const refreshSettings = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            // TODO: Fetch from API
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+        await loadFromDB();
+    }, [loadFromDB]);
 
     return {
         settings,

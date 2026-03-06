@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 import type { LocationCoord } from '@/types/location';
 
 export class LocationTrackingService {
@@ -39,7 +40,7 @@ export class LocationTrackingService {
             await this.recordLocation(getLocationFn);
         }, this.TRACKING_INTERVAL_MS);
 
-        console.log(`Location tracking started for session: ${sessionId}`);
+        logger.info(`Location tracking started for session: ${sessionId}`, { action: 'location.tracking.start', sessionId });
         return true;
     }
 
@@ -76,7 +77,7 @@ export class LocationTrackingService {
                 return false;
             }
 
-            console.log(`Location recorded: ${location.lat}, ${location.lng}`);
+            logger.debug('Location recorded', { action: 'location.recorded', lat: location.lat, lng: location.lng });
             return true;
         } catch (error) {
             console.error('Error recording location:', error);
@@ -97,7 +98,7 @@ export class LocationTrackingService {
         this.sessionId = null;
 
         if (sessionId) {
-            console.log(`Location tracking stopped for session: ${sessionId}`);
+            logger.info(`Location tracking stopped for session: ${sessionId}`, { action: 'location.tracking.stop', sessionId });
         }
     }
 

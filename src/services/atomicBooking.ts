@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { paymentService } from '@/services/payment';
 import { toast } from '@/hooks/use-toast';
 import { CriticalFlows } from '@/lib/performance';
+import { logger } from '@/lib/logger';
 
 export interface BookingPaymentData {
     parentId: string;
@@ -62,7 +63,7 @@ export async function createBookingWithPayment(
         // Step 1: Create booking + transaction atomically
         const { data: result, error: rpcError } = await CriticalFlows.trackBookingCreation(
             () =>
-            (supabase as any).rpc(
+                (supabase as any).rpc(
                     'create_booking_with_transaction',
                     {
                         p_parent_id: data.parentId,
@@ -89,9 +90,10 @@ export async function createBookingWithPayment(
         bookingId = (result as any).booking_id;
         transactionId = (result as any).transaction_id;
 
-        console.log('Booking and transaction created:', {
-            bookingId,
-            transactionId,
+        logger.info('Booking and transaction created', {
+            action: 'booking.created',
+            bookingId: bookingId ?? undefined,
+            transactionId: transactionId ?? undefined,
             platformFee: (result as any).platform_fee,
             sitterAmount: (result as any).sitter_amount,
         });
@@ -192,5 +194,5 @@ async function rollbackBooking(
         throw new Error(`Rollback failed: ${error.message}`);
     }
 
-    console.log('Successfully rolled back booking:', bookingId);
+    logger.info('Booking rolled back', { action: 'booking.rollback', bookingId });
 }

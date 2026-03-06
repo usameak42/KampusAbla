@@ -2,7 +2,7 @@
  * useReviews Hook - Manages reviews data and operations
  */
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import type { Review, ReviewStats, ReviewPair, TrustReason, DetailedReviewSubmission } from "@/types/review";
 import { calculateTrustWeight, getReviewStats } from "@/types/review";
 import { calculateOverallFromDetailed } from "@/constants/reviewQuestions";
@@ -14,106 +14,6 @@ type SupabaseClientAny = typeof supabase & {
     from: (table: string) => any;
 };
 
-// Mock reviews data
-const MOCK_REVIEWS: Review[] = [
-    {
-        id: "review-1",
-        sessionId: "session-1",
-        bookingId: "booking-3",
-        reviewerId: "parent-1",
-        reviewerName: "Ayşe Demir",
-        reviewerPhoto: "/images/parent1.jpg",
-        reviewerRole: "parent",
-        revieweeId: "sitter-2",
-        revieweeName: "Selin Öz",
-        revieweeRole: "sitter",
-        rating: 5,
-        comment: "Selin harika bir bakıcı! Çocuklarım onunla çok eğlendi ve ödevlerini de tamamladılar. Kesinlikle tekrar çalışacağız.",
-        isTrusted: true,
-        trustWeight: 0.65,
-        trustReasons: ["verified_user", "completed_payment", "long_session"],
-        status: "visible",
-        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-        visibleAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    },
-    {
-        id: "review-2",
-        sessionId: "session-1",
-        bookingId: "booking-3",
-        reviewerId: "sitter-2",
-        reviewerName: "Selin Öz",
-        reviewerPhoto: "/images/sitter2.jpg",
-        reviewerRole: "sitter",
-        revieweeId: "parent-1",
-        revieweeName: "Ayşe Demir",
-        revieweeRole: "parent",
-        rating: 5,
-        comment: "Ayşe Hanım çok anlayışlı ve iletişimi kolay bir aile. Çocuklar çok tatlıydı.",
-        isTrusted: true,
-        trustWeight: 0.5,
-        trustReasons: ["verified_user", "completed_payment"],
-        status: "visible",
-        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-        visibleAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    },
-    {
-        id: "review-3",
-        sessionId: "session-2",
-        bookingId: "booking-5",
-        reviewerId: "parent-2",
-        reviewerName: "Mehmet Yılmaz",
-        reviewerRole: "parent",
-        revieweeId: "sitter-1",
-        revieweeName: "Elif Kaya",
-        revieweeRole: "sitter",
-        rating: 4,
-        comment: "Elif çok profesyonel. Zamanında geldi ve çocuğumla güzel vakit geçirdi.",
-        isTrusted: false,
-        trustWeight: 0.35,
-        trustReasons: ["completed_payment"],
-        status: "visible",
-        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        visibleAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-    },
-    {
-        id: "review-4",
-        sessionId: "session-3",
-        bookingId: "booking-6",
-        reviewerId: "parent-3",
-        reviewerName: "Zeynep Aksoy",
-        reviewerRole: "parent",
-        revieweeId: "sitter-1",
-        revieweeName: "Elif Kaya",
-        revieweeRole: "sitter",
-        rating: 5,
-        comment: "Mükemmel bir deneyim! Elif hem eğitici hem de eğlenceli aktiviteler yaptı. Kızım artık Elif'i her zaman bekliyor.",
-        isTrusted: true,
-        trustWeight: 0.8,
-        trustReasons: ["verified_user", "repeat_booking", "completed_payment", "premium_subscriber"],
-        status: "visible",
-        createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-        visibleAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000),
-    },
-    {
-        id: "review-5",
-        sessionId: "session-4",
-        bookingId: "booking-7",
-        reviewerId: "parent-4",
-        reviewerName: "Burak Çelik",
-        reviewerRole: "parent",
-        revieweeId: "sitter-1",
-        revieweeName: "Elif Kaya",
-        revieweeRole: "sitter",
-        rating: 3,
-        comment: "Genel olarak iyi ama biraz gecikme oldu.",
-        isTrusted: false,
-        trustWeight: 0.2,
-        trustReasons: ["completed_payment"],
-        status: "visible",
-        createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-        visibleAt: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000),
-    },
-];
 
 interface UseReviewsOptions {
     userId?: string;
@@ -123,19 +23,69 @@ interface UseReviewsOptions {
 
 export function useReviews(options: UseReviewsOptions = {}) {
     const { userId, sitterId, sessionId } = options;
-    const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
+    const [reviews, setReviews] = useState<Review[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Refresh - defined early to be available in other callbacks
+    // Refresh — loads reviews from Supabase filtered by the provided options
     const refreshReviews = useCallback(async () => {
         setIsLoading(true);
+        setError(null);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            const db = supabase as SupabaseClientAny;
+            let query = db
+                .from('reviews')
+                .select(`
+                    id, session_id, booking_id, reviewer_id, reviewee_id,
+                    reviewer_role, reviewee_role, rating, comment, status,
+                    created_at, visible_at,
+                    reviewer:profiles!reviewer_id(full_name, profile_photo_url),
+                    reviewee:profiles!reviewee_id(full_name)
+                `)
+                .eq('status', 'visible')
+                .order('created_at', { ascending: false });
+
+            if (sitterId) query = query.eq('reviewee_id', sitterId);
+            else if (userId) query = query.eq('reviewer_id', userId);
+            if (sessionId) query = query.eq('session_id', sessionId);
+
+            const { data, error: fetchError } = await query;
+            if (fetchError) throw fetchError;
+
+            const mapped: Review[] = (data || []).map((r: any) => ({
+                id: r.id,
+                sessionId: r.session_id,
+                bookingId: r.booking_id,
+                reviewerId: r.reviewer_id,
+                reviewerName: r.reviewer?.full_name ?? 'Kullanıcı',
+                reviewerPhoto: r.reviewer?.profile_photo_url ?? undefined,
+                reviewerRole: r.reviewer_role as 'parent' | 'sitter',
+                revieweeId: r.reviewee_id,
+                revieweeName: r.reviewee?.full_name ?? 'Kullanıcı',
+                revieweeRole: r.reviewee_role as 'parent' | 'sitter',
+                rating: r.rating,
+                comment: r.comment ?? '',
+                isTrusted: false,
+                trustWeight: 0.5,
+                trustReasons: [] as TrustReason[],
+                status: r.status as Review['status'],
+                createdAt: new Date(r.created_at),
+                visibleAt: r.visible_at ? new Date(r.visible_at) : undefined,
+            }));
+
+            setReviews(mapped);
+        } catch (err) {
+            console.error('Error fetching reviews:', err);
+            setError('Değerlendirmeler yüklenemedi');
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [userId, sitterId, sessionId]);
+
+    // Initial load
+    useEffect(() => {
+        refreshReviews();
+    }, [refreshReviews]);
 
     // Get reviews for a sitter
     const sitterReviews = useMemo(() => {
@@ -202,21 +152,38 @@ export function useReviews(options: UseReviewsOptions = {}) {
                     throw new Error(validation.error.errors[0].message);
                 }
 
-                // TODO: Supabase mutation
-                await new Promise((resolve) => setTimeout(resolve, 500));
+                const reviewerRole: 'parent' | 'sitter' = data.revieweeRole === 'sitter' ? 'parent' : 'sitter';
 
-                // Calculate trust factors (simplified for mock)
-                const trustReasons: TrustReason[] = ["completed_payment"];
-                // In real app: check if verified_user, repeat_booking, etc.
+                // Insert review into Supabase
+                const db = supabase as SupabaseClientAny;
+                const { data: insertedRow, error: insertError } = await db
+                    .from('reviews')
+                    .insert({
+                        session_id: data.sessionId,
+                        booking_id: data.bookingId,
+                        reviewer_id: userId,
+                        reviewee_id: data.revieweeId,
+                        reviewer_role: reviewerRole,
+                        reviewee_role: data.revieweeRole,
+                        rating: data.rating,
+                        comment: data.comment,
+                        status: 'submitted',
+                    })
+                    .select('id, created_at')
+                    .single();
 
+                if (insertError) throw insertError;
+
+                // Build a local Review object for immediate return / optimistic display
+                const trustReasons: TrustReason[] = ['completed_payment'];
                 const newReview: Review = {
-                    id: `review-${Date.now()}`,
+                    id: insertedRow.id,
                     sessionId: data.sessionId,
                     bookingId: data.bookingId,
                     reviewerId: userId,
                     reviewerName: data.reviewerName,
                     reviewerPhoto: data.reviewerPhoto,
-                    reviewerRole: data.revieweeRole === "sitter" ? "parent" : "sitter",
+                    reviewerRole,
                     revieweeId: data.revieweeId,
                     revieweeName: data.revieweeName,
                     revieweeRole: data.revieweeRole,
@@ -225,29 +192,12 @@ export function useReviews(options: UseReviewsOptions = {}) {
                     isTrusted: trustReasons.length >= 2,
                     trustWeight: calculateTrustWeight(trustReasons),
                     trustReasons,
-                    status: "submitted",
-                    createdAt: new Date(),
+                    status: 'submitted',
+                    createdAt: new Date(insertedRow.created_at),
                 };
 
-                setReviews((prev) => {
-                    const updated = [...prev, newReview];
-
-                    // Check if both parties have submitted
-                    const sessionReviews = updated.filter((r) => r.sessionId === data.sessionId);
-                    const parentReview = sessionReviews.find((r) => r.reviewerRole === "parent");
-                    const sitterReview = sessionReviews.find((r) => r.reviewerRole === "sitter");
-
-                    // If both submitted, make them visible
-                    if (parentReview && sitterReview) {
-                        return updated.map((r) =>
-                            r.sessionId === data.sessionId
-                                ? { ...r, status: "visible" as const, visibleAt: new Date() }
-                                : r
-                        );
-                    }
-
-                    return updated;
-                });
+                // Reload reviews from DB to reflect server-side visibility logic
+                await refreshReviews();
 
                 return newReview;
             } catch (err) {

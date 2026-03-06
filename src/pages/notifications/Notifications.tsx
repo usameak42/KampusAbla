@@ -70,7 +70,6 @@ export default function Notifications() {
 
     const markAllAsRead = () => {
         // TODO: Mark all as read in Supabase
-        console.log("Marking all as read");
     };
 
     return (

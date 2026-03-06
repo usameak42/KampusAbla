@@ -1,4 +1,5 @@
 import imageCompression from 'browser-image-compression';
+import { logger } from '@/lib/logger';
 
 export interface CompressionOptions {
     maxSizeMB: number;
@@ -45,10 +46,12 @@ export async function compressImage(
         const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2);
         const reduction = (((file.size - compressedFile.size) / file.size) * 100).toFixed(1);
 
-        console.log(`🖼️ Image Compression:`);
-        console.log(`  Original: ${originalSize} MB`);
-        console.log(`  Compressed: ${compressedSize} MB`);
-        console.log(`  Reduction: ${reduction}%`);
+        logger.debug('Image compressed', {
+            action: 'image.compress',
+            originalSizeMB: originalSize,
+            compressedSizeMB: compressedSize,
+            reductionPct: reduction,
+        });
 
         return compressedFile;
     } catch (error) {
