@@ -184,13 +184,10 @@ export default function ReportsQueue() {
                                                     {new Date(report.created_at).toLocaleDateString()}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex flex-col">
-                                                        <span>{report.reporter?.first_name} {report.reporter?.last_name}</span>
-                                                        <span className="text-xs text-muted-foreground">{report.reporter?.email}</span>
-                                                    </div>
+                                                    <span className="text-sm font-mono">{report.reporter_id.slice(0, 8)}...</span>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {report.reported?.first_name} {report.reported?.last_name}
+                                                    <span className="text-sm font-mono">{report.reported_id.slice(0, 8)}...</span>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex flex-col gap-1">
