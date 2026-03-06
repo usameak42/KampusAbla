@@ -216,6 +216,7 @@ const App = () => (
                   <Route path="/checkout/confirmation" element={<PrivateRoute><PaymentConfirmationPage /></PrivateRoute>} />
                   <Route path="/sitters/:sitterId" element={<SitterProfilePage />} />
                   <Route path="/sitter/:sitterId" element={<SitterProfilePage />} />
+                  <Route path="/profile" element={<PrivateRoute><SitterProfile /></PrivateRoute>} />
                   <Route path="/favorites" element={<PrivateRoute><FavoritesPage /></PrivateRoute>} />
                   <Route path="/earnings" element={<PrivateRoute><EarningsPage /></PrivateRoute>} />
                   <Route path="/earnings/history" element={<PrivateRoute><PayoutHistoryPage /></PrivateRoute>} />
@@ -224,6 +225,7 @@ const App = () => (
 
                   {/* Auth Routes */}
                   <Route path="/login" element={<Login />} />
+                  <Route path="/unauthorized" element={<NotFound />} />
 
                   {/* Admin Routes */}
                   <Route path="/admin/login" element={<AdminLogin />} />
