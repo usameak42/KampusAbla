@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, Lock, Mail, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,34 @@ export default function AdminLogin() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+
+    // Auto-redirect if admin session already exists
+    useEffect(() => {
+        const checkExistingSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) return;
+
+            const role = session.user.user_metadata?.role;
+            if (role === "admin") {
+                navigate("/admin/dashboard", { replace: true });
+                return;
+            }
+
+            // Check user_roles table
+            const { data: roleData } = await supabase
+                .from("user_roles" as any)
+                .select("role")
+                .eq("user_id", session.user.id)
+                .eq("role", "admin")
+                .maybeSingle();
+
+            if (roleData) {
+                navigate("/admin/dashboard", { replace: true });
+            }
+        };
+
+        checkExistingSession();
+    }, [navigate]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

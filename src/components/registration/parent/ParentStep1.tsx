@@ -20,7 +20,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Info } from "lucide-react";
+import { validateEmailAscii } from "@/utils/emailValidator";
 
 interface ParentStep1Props {
     formData: Partial<ParentFormData>;
@@ -48,11 +48,18 @@ export function ParentStep1({ formData, updateFormData, onNext, onBack }: Parent
 
     // Error state
     const [passwordError, setPasswordError] = useState("");
+    const [emailError, setEmailError] = useState<string | null>(null);
 
     // Submit registration (email+password, skip SMS for now)
     const handleEmailSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setPasswordError("");
+
+        const asciiError = validateEmailAscii(email);
+        if (asciiError) {
+            setEmailError(asciiError);
+            return;
+        }
 
         if (password !== confirmPassword) {
             setPasswordError("Şifreler eşleşmiyor");
@@ -207,11 +214,18 @@ export function ParentStep1({ formData, updateFormData, onNext, onBack }: Parent
                         id="email"
                         type="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                            setEmail(e.target.value);
+                            setEmailError(validateEmailAscii(e.target.value));
+                        }}
                         placeholder="ornek@email.com"
                         required
                         disabled={isLoading}
+                        className={emailError ? "border-destructive" : ""}
                     />
+                    {emailError && (
+                        <p className="text-xs text-destructive">{emailError}</p>
+                    )}
                 </div>
 
                 <div className="space-y-2">

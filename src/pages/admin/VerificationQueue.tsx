@@ -60,24 +60,34 @@ export default function VerificationQueue() {
         try {
             const { data, error } = await supabase
                 .from("sitter_verifications")
-                .select(`
-                    *,
-                    sitters (
-                        full_name,
-                        university
-                    )
-                `)
+                .select("*")
                 .eq("verification_status", "pending")
                 .order("created_at", { ascending: true });
 
             if (error) throw error;
 
-            const formattedVerifications: PendingVerification[] = data.map((item: any) => ({
+            const verifications = data || [];
+
+            // Fetch sitter details separately to avoid FK join issues
+            const sitterIds = [...new Set(verifications.map((v: any) => v.sitter_id).filter(Boolean))];
+            const { data: sittersData } = sitterIds.length
+                ? await supabase
+                    .from("sitters")
+                    .select("id, full_name, university")
+                    .in("id", sitterIds)
+                : { data: [] };
+
+            const sitterMap: Record<string, { full_name: string; university: string }> = {};
+            (sittersData || []).forEach((s: any) => {
+                sitterMap[s.id] = { full_name: s.full_name, university: s.university };
+            });
+
+            const formattedVerifications: PendingVerification[] = verifications.map((item: any) => ({
                 id: item.id,
                 sitterId: item.sitter_id,
-                sitterName: item.sitters?.full_name || "Bilinmiyor",
+                sitterName: sitterMap[item.sitter_id]?.full_name || "Bilinmiyor",
                 sitterEmail: item.university_email || "-",
-                university: item.sitters?.university || "-",
+                university: sitterMap[item.sitter_id]?.university || "-",
                 submittedAt: item.created_at,
                 studentIdUrl: item.student_id_url,
                 governmentIdUrl: item.government_id_url,

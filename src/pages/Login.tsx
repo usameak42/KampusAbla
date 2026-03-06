@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { validateEmailAscii } from "@/utils/emailValidator";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -21,11 +22,23 @@ export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+    const [emailError, setEmailError] = useState<string | null>(null);
 
     const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/";
 
+    const handleEmailChange = (value: string) => {
+        setEmail(value);
+        setEmailError(validateEmailAscii(value));
+    };
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const asciiError = validateEmailAscii(email);
+        if (asciiError) {
+            setEmailError(asciiError);
+            return;
+        }
 
         try {
             await handleSignIn(email, password);
@@ -58,10 +71,14 @@ export default function Login() {
                                 type="email"
                                 placeholder="ornek@email.com"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) => handleEmailChange(e.target.value)}
                                 required
                                 disabled={isLoading}
+                                className={emailError ? "border-destructive" : ""}
                             />
+                            {emailError && (
+                                <p className="text-xs text-destructive">{emailError}</p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -100,7 +117,7 @@ export default function Login() {
                             </Label>
                         </div>
 
-                        <Button type="submit" className="w-full" disabled={isLoading}>
+                        <Button type="submit" className="w-full" disabled={isLoading || !!emailError}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Giriş Yap
                         </Button>

@@ -37,7 +37,7 @@ export function Sidebar({ role }: SidebarProps) {
     const sitterMenuItems = [
         { icon: Home, label: "Dashboard", href: "/" },
         { icon: FileText, label: "İhtiyaç İlanları", href: "/need-posts" },
-        { icon: Calendar, label: "Seanslarım", href: "/sessions" },
+        { icon: Calendar, label: "İş İlanlarım", href: "/jobpost" },
         { icon: MessageSquare, label: "Mesajlar", href: "/messages" },
         { icon: CreditCard, label: "Kazançlarım", href: "/earnings" },
         { icon: FileText, label: "İlanlarım", href: "/my-sitter-posts" },
@@ -55,7 +55,8 @@ export function Sidebar({ role }: SidebarProps) {
                 {menuItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.href || 
-                        (item.href === "/" && location.pathname === "/dashboard");
+                        (item.href === "/" && location.pathname === "/dashboard") ||
+                        (item.href === "/jobpost" && location.pathname === "/bookings");
 
                     return (
                         <Link

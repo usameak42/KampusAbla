@@ -100,6 +100,7 @@ const VerificationQueue = lazy(() => import("./pages/admin/VerificationQueue"));
 const ReportsQueue = lazy(() => import("./pages/admin/ReportsQueue"));
 const AnalyticsDashboard = lazy(() => import("./pages/admin/AnalyticsDashboard"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminErrorLogs = lazy(() => import("./pages/admin/AdminErrorLogs"));
 const MySitterPosts = lazy(() => import("./pages/sitter-posts/MySitterPosts"));
 // const PlatformMonitoring = lazy(() => import("./pages/admin/PlatformMonitoring"));
 // const ContentManagement = lazy(() => import("./pages/admin/ContentManagement"));
@@ -165,6 +166,8 @@ const App = () => (
                   <Route path="/bookings" element={<PrivateRoute><MyBookings /></PrivateRoute>} />
                   <Route path="/bookings/:bookingId" element={<PrivateRoute><BookingDetail /></PrivateRoute>} />
                   <Route path="/calendar" element={<PrivateRoute><CalendarPage /></PrivateRoute>} />
+                  {/* /jobpost is a sitter-specific alias for bookings/sessions */}
+                  <Route path="/jobpost" element={<PrivateRoute><MyBookings /></PrivateRoute>} />
 
                   {/* Sidebar Aliases */}
                   <Route path="/dashboard" element={<PrivateRoute><FindSitters /></PrivateRoute>} />
@@ -243,6 +246,7 @@ const App = () => (
                   <Route path="/admin/reports" element={<AdminRoute><ReportsQueue /></AdminRoute>} />
                   <Route path="/admin/monitoring" element={<AdminRoute><AnalyticsDashboard /></AdminRoute>} />
                   <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+                  <Route path="/admin/error-logs" element={<AdminRoute><AdminErrorLogs /></AdminRoute>} />
 
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />

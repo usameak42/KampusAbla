@@ -7,6 +7,9 @@ const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 const WARNING_BEFORE = 2 * 60 * 1000; // 2 minutes before timeout
 const PARENT_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
 const SITTER_TIMEOUT = 8 * 60 * 60 * 1000; // 8 hours
+const ADMIN_TIMEOUT = 50 * 60 * 1000; // 50 minutes absolute session limit for admins
+// Admin warning triggers 10 minutes before the absolute timeout (i.e., at 40 minutes)
+const ADMIN_WARNING_BEFORE = 10 * 60 * 1000;
 const REMEMBER_ME_TIMEOUT = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export function useSessionTimeout() {
@@ -55,13 +58,29 @@ export function useSessionTimeout() {
     }
   }, [warningType, resetActivity]);
 
-  const checkTimeouts = useCallback(() => {
+    const checkTimeouts = useCallback(() => {
     if (!user || isPublicRoute) return;
 
     const now = Date.now();
     const lastActivity = getStoredTime('last_activity_time') || now;
     const sessionStart = getStoredTime('session_start_time') || now;
     const rememberMe = localStorage.getItem('remember_me') === 'true';
+    const role = user.user_metadata?.role;
+
+    // Admin role uses its own timeout logic (no inactivity check, 50min absolute + 10min warning)
+    if (role === 'admin') {
+      const timeSinceStart = now - sessionStart;
+      if (timeSinceStart >= ADMIN_TIMEOUT) {
+        logout();
+        return;
+      } else if (timeSinceStart >= ADMIN_TIMEOUT - ADMIN_WARNING_BEFORE) {
+        if (!showWarning || warningType !== 'absolute') {
+          setShowWarning(true);
+          setWarningType('absolute');
+        }
+      }
+      return;
+    }
 
     // 1. Check Inactivity
     const timeSinceLastActivity = now - lastActivity;
@@ -79,7 +98,7 @@ export function useSessionTimeout() {
     let absoluteLimit = PARENT_TIMEOUT; // Default to parent
     if (rememberMe) {
       absoluteLimit = REMEMBER_ME_TIMEOUT;
-    } else if (user.user_metadata?.role === 'sitter') {
+    } else if (role === 'sitter') {
       absoluteLimit = SITTER_TIMEOUT;
     }
 

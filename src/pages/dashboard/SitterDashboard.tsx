@@ -141,13 +141,10 @@ export default function SitterDashboard() {
 
             const today = startOfDay(new Date()).toISOString();
 
+            // Fetch base bookings without FK joins to avoid PostgREST FK constraint errors
             const { data, error } = await supabase
                 .from("bookings")
-                .select(
-                    `id, booking_date, start_time, duration_hours, meeting_address,
-                     parent:parents(full_name),
-                     children:booking_children(child:children(name))`
-                )
+                .select("id, booking_date, start_time, duration_hours, meeting_address, parent_id")
                 .eq("sitter_id", sitterId)
                 .in("status", ["confirmed", "pending"])
                 .gte("booking_date", today)
@@ -157,7 +154,46 @@ export default function SitterDashboard() {
 
             if (error) throw error;
 
-            return (data || []).map((b: any) => {
+            const bookings = data || [];
+            if (bookings.length === 0) return [];
+
+            // Fetch parent names separately
+            const parentIds = [...new Set(bookings.map((b: any) => b.parent_id).filter(Boolean))];
+            const { data: parentsData } = parentIds.length
+                ? await supabase
+                    .from("parents")
+                    .select("user_id, full_name")
+                    .in("user_id", parentIds)
+                : { data: [] };
+
+            const parentMap: Record<string, string> = {};
+            (parentsData || []).forEach((p: any) => { parentMap[p.user_id] = p.full_name; });
+
+            // Fetch children for these bookings separately
+            const bookingIds = bookings.map((b: any) => b.id);
+            const { data: bookingChildrenData } = await supabase
+                .from("booking_children")
+                .select("booking_id, child_id")
+                .in("booking_id", bookingIds);
+
+            const childIds = [...new Set((bookingChildrenData || []).map((bc: any) => bc.child_id).filter(Boolean))];
+            const { data: childrenData } = childIds.length
+                ? await supabase
+                    .from("children")
+                    .select("id, name")
+                    .in("id", childIds)
+                : { data: [] };
+
+            const childMap: Record<string, string> = {};
+            (childrenData || []).forEach((c: any) => { childMap[c.id] = c.name; });
+
+            const bookingChildrenMap: Record<string, string[]> = {};
+            (bookingChildrenData || []).forEach((bc: any) => {
+                if (!bookingChildrenMap[bc.booking_id]) bookingChildrenMap[bc.booking_id] = [];
+                if (childMap[bc.child_id]) bookingChildrenMap[bc.booking_id].push(childMap[bc.child_id]);
+            });
+
+            return bookings.map((b: any) => {
                 const startHour = parseInt((b.start_time as string).substring(0, 2), 10);
                 const startMin = parseInt((b.start_time as string).substring(3, 5), 10);
                 const durationMins = Math.round((b.duration_hours ?? 1) * 60);
@@ -166,10 +202,8 @@ export default function SitterDashboard() {
 
                 return {
                     id: b.id,
-                    childrenNames: (b.children ?? [])
-                        .map((bc: any) => bc.child?.name)
-                        .filter(Boolean),
-                    parentName: b.parent?.full_name ?? "Veli",
+                    childrenNames: bookingChildrenMap[b.id] ?? [],
+                    parentName: parentMap[b.parent_id] ?? "Veli",
                     bookingDate: format(new Date(b.booking_date), "d MMMM yyyy"),
                     startTime: (b.start_time as string).substring(0, 5),
                     endTime,
@@ -187,13 +221,10 @@ export default function SitterDashboard() {
         queryFn: async () => {
             const today = startOfDay(new Date()).toISOString();
 
+            // Fetch base need posts without FK joins
             const { data, error } = await supabase
                 .from("need_posts")
-                .select(
-                    `id, date, start_time, end_time, hourly_rate,
-                     parent:parents(full_name),
-                     children:need_post_children(child:children(name))`
-                )
+                .select("id, date, start_time, end_time, hourly_rate, parent_id")
                 .eq("status", "open")
                 .gte("date", today)
                 .order("date", { ascending: true })
@@ -201,13 +232,49 @@ export default function SitterDashboard() {
 
             if (error) throw error;
 
-            return (data || []).map((p: any) => ({
+            const posts = data || [];
+            if (posts.length === 0) return [];
+
+            // Fetch parent names separately
+            const parentIds = [...new Set(posts.map((p: any) => p.parent_id).filter(Boolean))];
+            const { data: parentsData } = parentIds.length
+                ? await supabase
+                    .from("parents")
+                    .select("user_id, full_name")
+                    .in("user_id", parentIds)
+                : { data: [] };
+
+            const parentMap: Record<string, string> = {};
+            (parentsData || []).forEach((p: any) => { parentMap[p.user_id] = p.full_name; });
+
+            // Fetch children for these need posts separately
+            const postIds = posts.map((p: any) => p.id);
+            const { data: postChildrenData } = await supabase
+                .from("need_post_children")
+                .select("need_post_id, child_id")
+                .in("need_post_id", postIds);
+
+            const childIds = [...new Set((postChildrenData || []).map((pc: any) => pc.child_id).filter(Boolean))];
+            const { data: childrenData } = childIds.length
+                ? await supabase
+                    .from("children")
+                    .select("id, name")
+                    .in("id", childIds)
+                : { data: [] };
+
+            const childMap: Record<string, string> = {};
+            (childrenData || []).forEach((c: any) => { childMap[c.id] = c.name; });
+
+            const postChildrenMap: Record<string, string[]> = {};
+            (postChildrenData || []).forEach((pc: any) => {
+                if (!postChildrenMap[pc.need_post_id]) postChildrenMap[pc.need_post_id] = [];
+                if (childMap[pc.child_id]) postChildrenMap[pc.need_post_id].push(childMap[pc.child_id]);
+            });
+
+            return posts.map((p: any) => ({
                 id: p.id,
-                childName: (p.children ?? [])
-                    .map((nc: any) => nc.child?.name)
-                    .filter(Boolean)
-                    .join(", ") || "Çocuk",
-                parentName: p.parent?.full_name ?? "Veli",
+                childName: (postChildrenMap[p.id] ?? []).join(", ") || "Çocuk",
+                parentName: parentMap[p.parent_id] ?? "Veli",
                 date: format(new Date(p.date), "d MMMM yyyy"),
                 timeRange: `${(p.start_time as string).substring(0, 5)}-${(p.end_time as string).substring(0, 5)}`,
                 hourlyRate: p.hourly_rate,

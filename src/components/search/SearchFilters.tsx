@@ -427,8 +427,8 @@ export function SearchFilters({
                                     </div>
                                     <Slider
                                         min={0}
-                                        max={50}
-                                        step={5}
+                                        max={5}
+                                        step={0.5}
                                         value={[filters.minReviewCount || 0]}
                                         onValueChange={([value]) =>
                                             onFiltersChange({ ...filters, minReviewCount: value })

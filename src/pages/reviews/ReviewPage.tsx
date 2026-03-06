@@ -129,6 +129,11 @@ export default function ReviewPage() {
             comment,
             reviewerName: currentUserName,
         });
+
+        toast({
+            title: "Değerlendirme Gönderildi ✓",
+            description: "Teşekkürler! Değerlendirmeniz başarıyla kaydedildi.",
+        });
     };
 
     return (

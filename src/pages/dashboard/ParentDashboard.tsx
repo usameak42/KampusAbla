@@ -90,13 +90,10 @@ export default function ParentDashboard() {
 
             const today = startOfDay(new Date()).toISOString();
 
+            // Fetch base bookings without FK joins to avoid PostgREST FK constraint errors
             const { data, error } = await supabase
                 .from("bookings")
-                .select(
-                    `id, booking_date, start_time, status,
-                     sitter:sitters(full_name),
-                     children:booking_children(child:children(name))`
-                )
+                .select("id, booking_date, start_time, status, sitter_id")
                 .eq("parent_id", parentId)
                 .in("status", ["confirmed", "pending"])
                 .gte("booking_date", today)
@@ -106,12 +103,49 @@ export default function ParentDashboard() {
 
             if (error) throw error;
 
-            return (data || []).map((b: any) => ({
+            const bookings = data || [];
+            if (bookings.length === 0) return [];
+
+            // Fetch sitter names separately
+            const sitterIds = [...new Set(bookings.map((b: any) => b.sitter_id).filter(Boolean))];
+            const { data: sittersData } = sitterIds.length
+                ? await supabase
+                    .from("sitters")
+                    .select("id, full_name")
+                    .in("id", sitterIds)
+                : { data: [] };
+
+            const sitterMap: Record<string, string> = {};
+            (sittersData || []).forEach((s: any) => { sitterMap[s.id] = s.full_name; });
+
+            // Fetch children for these bookings separately
+            const bookingIds = bookings.map((b: any) => b.id);
+            const { data: bookingChildrenData } = await supabase
+                .from("booking_children")
+                .select("booking_id, child_id")
+                .in("booking_id", bookingIds);
+
+            const childIds = [...new Set((bookingChildrenData || []).map((bc: any) => bc.child_id).filter(Boolean))];
+            const { data: childrenData } = childIds.length
+                ? await supabase
+                    .from("children")
+                    .select("id, name")
+                    .in("id", childIds)
+                : { data: [] };
+
+            const childMap: Record<string, string> = {};
+            (childrenData || []).forEach((c: any) => { childMap[c.id] = c.name; });
+
+            const bookingChildrenMap: Record<string, string[]> = {};
+            (bookingChildrenData || []).forEach((bc: any) => {
+                if (!bookingChildrenMap[bc.booking_id]) bookingChildrenMap[bc.booking_id] = [];
+                if (childMap[bc.child_id]) bookingChildrenMap[bc.booking_id].push(childMap[bc.child_id]);
+            });
+
+            return bookings.map((b: any) => ({
                 id: b.id,
-                sitterName: b.sitter?.full_name ?? "Bakıcı",
-                childrenNames: (b.children ?? [])
-                    .map((bc: any) => bc.child?.name)
-                    .filter(Boolean),
+                sitterName: sitterMap[b.sitter_id] ?? "Bakıcı",
+                childrenNames: bookingChildrenMap[b.id] ?? [],
                 bookingDate: format(new Date(b.booking_date), "d MMMM yyyy"),
                 startTime: (b.start_time as string).substring(0, 5),
                 status: b.status,
