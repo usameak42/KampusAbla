@@ -3,8 +3,7 @@
  */
 
 import { useState } from "react";
-import { format } from "date-fns";
-import { CalendarIcon, Plus, X, Loader2, AlertTriangle } from "lucide-react";
+import { Plus, X, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,12 +15,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -193,33 +186,71 @@ export function AddChildForm({
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>Doğum Tarihi *</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    className="w-full justify-start text-left font-normal"
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {dateOfBirth
-                                        ? format(dateOfBirth, "dd/MM/yyyy")
-                                        : "Tarih seçin"}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                    mode="single"
-                                    selected={dateOfBirth}
-                                    onSelect={setDateOfBirth}
-                                    disabled={(date) =>
-                                        date > new Date() || date < new Date("2005-01-01")
-                                    }
-                                    captionLayout="dropdown-buttons"
-                                    fromYear={2005}
-                                    toYear={new Date().getFullYear()}
-                                    initialFocus
-                                />
-                            </PopoverContent>
-                        </Popover>
+                        <div className="flex gap-1">
+                            {/* Day */}
+                            <Select
+                                value={dateOfBirth ? String(dateOfBirth.getDate()) : ""}
+                                onValueChange={(day) => {
+                                    const d = dateOfBirth ? new Date(dateOfBirth) : new Date(2015, 0, 1);
+                                    d.setDate(Number(day));
+                                    setDateOfBirth(new Date(d));
+                                }}
+                            >
+                                <SelectTrigger className="w-[60px] px-2">
+                                    <SelectValue placeholder="Gün" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                                        <SelectItem key={d} value={String(d)}>
+                                            {d}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {/* Month */}
+                            <Select
+                                value={dateOfBirth ? String(dateOfBirth.getMonth()) : ""}
+                                onValueChange={(month) => {
+                                    const d = dateOfBirth ? new Date(dateOfBirth) : new Date(2015, 0, 1);
+                                    d.setMonth(Number(month));
+                                    setDateOfBirth(new Date(d));
+                                }}
+                            >
+                                <SelectTrigger className="flex-1 px-2">
+                                    <SelectValue placeholder="Ay" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"].map((m, i) => (
+                                        <SelectItem key={i} value={String(i)}>
+                                            {m}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {/* Year */}
+                            <Select
+                                value={dateOfBirth ? String(dateOfBirth.getFullYear()) : ""}
+                                onValueChange={(year) => {
+                                    const d = dateOfBirth ? new Date(dateOfBirth) : new Date(2015, 0, 1);
+                                    d.setFullYear(Number(year));
+                                    setDateOfBirth(new Date(d));
+                                }}
+                            >
+                                <SelectTrigger className="w-[72px] px-2">
+                                    <SelectValue placeholder="Yıl" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Array.from(
+                                        { length: new Date().getFullYear() - 2007 + 1 },
+                                        (_, i) => new Date().getFullYear() - i
+                                    ).map((y) => (
+                                        <SelectItem key={y} value={String(y)}>
+                                            {y}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div className="space-y-2">

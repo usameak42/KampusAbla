@@ -32,7 +32,7 @@ export function MobileNav({ role }: MobileNavProps) {
     const sitterMenuItems = [
         { icon: Home, label: "Ana Sayfa", href: "/" },
         { icon: FileText, label: "İlanlar", href: "/need-posts" },
-        { icon: Calendar, label: "Seanslar", href: "/sessions" },
+        { icon: Calendar, label: "İş İlanlarım", href: "/jobpost" },
         { icon: DollarSign, label: "Kazanç", href: "/earnings" },
         { icon: MessageSquare, label: "Mesajlar", href: "/messages" },
     ];

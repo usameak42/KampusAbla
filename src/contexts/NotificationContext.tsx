@@ -25,25 +25,39 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             return;
         }
 
-        // Set up foreground message listener (async-safe, no-ops if Firebase unavailable)
-        const unsubscribe = notificationService.onForegroundMessage((payload) => {
-            logger.info("Foreground notification received", {
-                action: "notifications.foreground_received",
-                userId: user?.id,
-                notification_title: payload.notification?.title,
+        let unsubscribe: (() => void) | null = null;
+
+        try {
+            // Set up foreground message listener (async-safe, no-ops if Firebase unavailable)
+            unsubscribe = notificationService.onForegroundMessage((payload) => {
+                logger.info("Foreground notification received", {
+                    action: "notifications.foreground_received",
+                    userId: user?.id,
+                    notification_title: payload.notification?.title,
+                });
+                toast(payload.notification?.title || "Yeni Bildirim", {
+                    description: payload.notification?.body,
+                });
             });
-            toast(payload.notification?.title || "Yeni Bildirim", {
-                description: payload.notification?.body,
+        } catch (err) {
+            logger.warn("Failed to initialize foreground message listener", {
+                action: "notifications.foreground_init_failed",
+                error: err,
             });
-        });
+        }
 
         // If user is already logged in and has permission, refresh token
         if (user && Notification.permission === "granted") {
-            notificationService.requestPermission(user.id);
+            notificationService.requestPermission(user.id).catch((err) => {
+                logger.warn("Failed to refresh notification token", {
+                    action: "notifications.token_refresh_failed",
+                    error: err,
+                });
+            });
         }
 
         return () => {
-            unsubscribe();
+            if (unsubscribe) unsubscribe();
         };
     }, [user]);
 

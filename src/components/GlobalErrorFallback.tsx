@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/react";
 import { AlertCircle, WifiOff, Lock, RefreshCw, Home, LogOut, Mail, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GlobalErrorFallbackProps {
     error: unknown;
@@ -61,7 +62,21 @@ export function GlobalErrorFallback({ error, resetError }: GlobalErrorFallbackPr
 
     const content = getErrorContent();
 
-    const handleReport = () => {
+    const handleReport = async () => {
+        // Insert error into error_logs table for admin review
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            await supabase.from("error_logs" as any).insert({
+                user_id: user?.id ?? null,
+                error_message: errorObj.message,
+                stack_trace: errorObj.stack ?? null,
+                page_url: window.location.href,
+                user_agent: navigator.userAgent,
+            });
+        } catch {
+            // Silently ignore DB insert failures during error reporting
+        }
+
         const eventId = Sentry.lastEventId();
         if (eventId) {
             Sentry.showReportDialog({ eventId, lang: 'tr' });
