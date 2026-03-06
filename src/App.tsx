@@ -90,6 +90,9 @@ const RoleSelection = lazy(() => import("./pages/register/RoleSelection"));
 const ParentRegistration = lazy(() => import("./pages/register/ParentRegistration"));
 const SitterRegistration = lazy(() => import("./pages/register/SitterRegistration"));
 const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+const BookingDetail = lazy(() => import("./pages/bookings/BookingDetail"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
@@ -160,6 +163,7 @@ const App = () => (
                   <Route path="/my-needs/:needPostId/applications" element={<PrivateRoute><ViewApplications /></PrivateRoute>} />
                   {/* Bookings Routes */}
                   <Route path="/bookings" element={<PrivateRoute><MyBookings /></PrivateRoute>} />
+                  <Route path="/bookings/:bookingId" element={<PrivateRoute><BookingDetail /></PrivateRoute>} />
                   <Route path="/calendar" element={<PrivateRoute><CalendarPage /></PrivateRoute>} />
 
                   {/* Sidebar Aliases */}
@@ -225,9 +229,13 @@ const App = () => (
 
                   {/* Auth Routes */}
                   <Route path="/login" element={<Login />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/unauthorized" element={<NotFound />} />
                   <Route path="/unauthorized" element={<NotFound />} />
 
                   {/* Admin Routes */}
+                  <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                   <Route path="/admin/login" element={<AdminLogin />} />
                   <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                   <Route path="/admin/users" element={<AdminRoute><UserManagement /></AdminRoute>} />

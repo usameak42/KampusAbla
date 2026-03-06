@@ -18,44 +18,18 @@ export default function Login() {
     const location = useLocation();
     const { handleSignIn, isLoading } = useAuthentication();
 
-    // Unified state - can be email or phone
-    const [identifier, setIdentifier] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
 
     const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/";
 
-    // Detect if input is email or phone number
-    const isEmail = (value: string): boolean => {
-        return value.includes("@");
-    };
-
-    const isPhoneNumber = (value: string): boolean => {
-        // Turkish phone format: starts with +90 or 0, followed by 10 digits
-        const phonePattern = /^(\+90|0)?[1-9]\d{9}$/;
-        const cleanValue = value.replace(/\s/g, "");
-        return phonePattern.test(cleanValue);
-    };
-
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
-            // Detect format and use appropriate authentication method
-            if (isEmail(identifier)) {
-                // Email + password login
-                await handleSignIn(identifier, password);
-            } else if (isPhoneNumber(identifier)) {
-                // Phone + password login
-                // Note: This assumes the backend supports phone + password authentication
-                // If not, we'll need to update the authentication hook
-                await handleSignIn(identifier, password);
-            } else {
-                // Invalid format
-                throw new Error("Geçersiz e-posta veya telefon numarası formatı");
-            }
+            await handleSignIn(email, password);
 
-            // Set session flags to initialize the timeouts
             localStorage.setItem("remember_me", rememberMe.toString());
             localStorage.setItem("session_start_time", Date.now().toString());
 
@@ -78,19 +52,16 @@ export default function Login() {
                 <CardContent>
                     <form onSubmit={handleLogin} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="identifier">E-posta veya Telefon Numarası</Label>
+                            <Label htmlFor="email">E-posta Adresi</Label>
                             <Input
-                                id="identifier"
-                                type="text"
-                                placeholder="ornek@email.com veya +90 555 123 45 67"
-                                value={identifier}
-                                onChange={(e) => setIdentifier(e.target.value)}
+                                id="email"
+                                type="email"
+                                placeholder="ornek@email.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
                                 disabled={isLoading}
                             />
-                            <p className="text-xs text-muted-foreground">
-                                E-posta adresinizi veya telefon numaranızı giriniz
-                            </p>
                         </div>
 
                         <div className="space-y-2">
