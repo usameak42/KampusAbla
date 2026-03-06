@@ -39,7 +39,7 @@ export function useNotifications({ userId }: UseNotificationsOptions) {
                 createdAt: new Date(n.created_at),
                 readAt: n.read_at ? new Date(n.read_at) : undefined,
                 senderName: "Sistem",
-                senderPhoto: undefined,
+                senderPhoto: undefined as string | undefined,
             })) as Notification[];
         },
         enabled: !!userId,

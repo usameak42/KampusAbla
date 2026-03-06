@@ -82,7 +82,7 @@ export function useDisputes(userId: string) {
     return {
         disputes,
         isLoading,
-        error: null, // query error not captured in destructuring above, but good to add if needed
+        error: null as string | null, // query error not captured in destructuring above, but good to add if needed
         createDispute,
     };
 }

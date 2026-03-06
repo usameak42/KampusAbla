@@ -309,7 +309,7 @@ describeIfSupabase('SQL Injection Prevention', () => {
     describe('NoSQL Injection (if applicable)', () => {
         it('should prevent NoSQL injection in JSON fields', async () => {
             // Test for NoSQL injection in JSON columns
-            const noSQLPayload = { $ne: null, $gt: '' };
+            const noSQLPayload: Record<string, unknown> = { $ne: null, $gt: '' };
 
             const { data, error } = await supabaseAdmin
                 .from('sitters')

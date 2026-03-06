@@ -20,7 +20,7 @@ import { logger } from "@/lib/logger";
 
 const LoadingScreen = () => <div className="min-h-screen flex items-center justify-center">Yükleniyor...</div>;
 
-const PerformanceRouteTracker = () => {
+const PerformanceRouteTracker = (): null => {
   const location = useLocation();
 
   useEffect(() => {

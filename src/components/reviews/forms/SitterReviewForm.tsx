@@ -65,10 +65,10 @@ export function SitterReviewForm({
         familyTags: [],
         familyFlags: {},
         tipForFamily: '',
-        childReviews: children.reduce((acc, child) => ({
-            ...acc,
-            [child.id]: { ratings: {}, tags: [], tip: '', visibleToFamily: false },
-        }), {}),
+        childReviews: children.reduce<FormState['childReviews']>((acc, child) => {
+            acc[child.id] = { ratings: {}, tags: [], tip: '', visibleToFamily: false };
+            return acc;
+        }, {}),
     });
 
     // Handlers

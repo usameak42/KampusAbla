@@ -67,8 +67,8 @@ function buildDbRow(overrides: Partial<Record<string, unknown>> = {}) {
         comment: VALID_COMMENT,
         status: "visible",
         created_at: new Date().toISOString(),
-        visible_at: null,
-        reviewer: { full_name: "Anne", profile_photo_url: null },
+        visible_at: null as string | null,
+        reviewer: { full_name: "Anne", profile_photo_url: null as string | null },
         reviewee: { full_name: "Bakıcı Adı" },
         ...overrides,
     };
