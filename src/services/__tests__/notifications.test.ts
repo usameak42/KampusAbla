@@ -14,6 +14,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 vi.mock("@/lib/firebase", () => ({
+    getFirebaseMessaging: vi.fn().mockResolvedValue({}),
     messaging: {},
 }));
 

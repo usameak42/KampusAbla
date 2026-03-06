@@ -3,6 +3,22 @@ import { useSettings } from "../useSettings";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { paymentService } from "@/services/payment";
 
+// Mock Supabase client — must come before any import that uses it
+vi.mock("@/integrations/supabase/client", () => ({
+    supabase: {
+        from: vi.fn(() => ({
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+            upsert: vi.fn().mockResolvedValue({ error: null }),
+            insert: vi.fn().mockResolvedValue({ error: null }),
+        })),
+        functions: {
+            invoke: vi.fn().mockResolvedValue({ data: {}, error: null }),
+        },
+    },
+}));
+
 // Mock payment service
 vi.mock("@/services/payment", () => ({
     paymentService: {

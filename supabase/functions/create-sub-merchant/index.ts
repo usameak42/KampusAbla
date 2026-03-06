@@ -70,7 +70,7 @@ serve(async (req) => {
 
         console.log(`Creating sub-merchant for sitter ${sitter.id}`)
 
-        let subMerchantKey = `mock_sm_${crypto.randomUUID().substring(0, 8)}`
+        const subMerchantKey = `mock_sm_${crypto.randomUUID().substring(0, 8)}`
 
         if (apiKey && secretKey) {
             // TODO: Implement actual iyzico REST API call using fetch()
