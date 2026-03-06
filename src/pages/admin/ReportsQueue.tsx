@@ -86,7 +86,7 @@ export default function ReportsQueue() {
     const handleAction = (report: Report, action: "resolve" | "dismiss" | "investigate") => {
         setSelectedReport(report);
         setActionType(action);
-        setResolutionNote(report.admin_notes || "");
+        setResolutionNote("");
         setIsResolutionDialogOpen(true);
     };
 
