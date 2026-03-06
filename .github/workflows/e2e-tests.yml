@@ -35,9 +35,6 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
         
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-        
       - name: Build application
         run: npm run build
         
@@ -49,8 +46,8 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test --project=${{ matrix.browser }}
         env:
-          # Base URL for the application
-          BASE_URL: http://localhost:4173
+          # Base URL for the application (must match vite preview port in vite.config.ts)
+          BASE_URL: http://localhost:8080
           
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -82,7 +79,9 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: playwright-reports-*
+          path: playwright-reports
+          pattern: playwright-report-*
+          merge-multiple: false
           
       - name: Merge test reports
         run: |
@@ -90,10 +89,10 @@ jobs:
           mkdir -p combined-reports
           
           # Merge all test results
-          find playwright-report-* -name "*.json" -exec cp {} combined-reports/ \;
+          find playwright-reports/ -name "*.json" -exec cp {} combined-reports/ \; 2>/dev/null || true
           
           # Generate summary
-          npx playwright merge-reports combined-reports/
+          npx playwright merge-reports combined-reports/ 2>/dev/null || true
           
       - name: Comment PR with results
         if: github.event_name == 'pull_request'
@@ -147,11 +146,15 @@ jobs:
             
       - name: Send Slack notification on failure
         if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          # Send notification to Slack channel
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"E2E Tests Failed! See: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
+          # Only send if the webhook secret is configured
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"E2E Tests Failed! See: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
+            "$SLACK_WEBHOOK_URL"
+          fi
           
   e2e-alerts:
     runs-on: ubuntu-latest
@@ -160,6 +163,7 @@ jobs:
     
     steps:
       - name: Send email alert
+        continue-on-error: true
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_SERVER }}

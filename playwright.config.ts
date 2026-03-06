@@ -33,7 +33,7 @@ export default defineConfig({
     webServer: {
         command: process.env.CI ? 'npm run preview' : 'npm run dev',
         url: process.env.BASE_URL || 'http://localhost:8080',
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: true,
         timeout: 120 * 1000,
     },
     outputDir: 'playwright-report',
