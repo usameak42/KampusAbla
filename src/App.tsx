@@ -179,6 +179,7 @@ const App = () => (
                   <Route path="/messages/:conversationId" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
                   {/* Children Routes */}
                   <Route path="/children" element={<PrivateRoute><ChildrenPage /></PrivateRoute>} />
+                  <Route path="/profile/children/add" element={<PrivateRoute><ChildrenPage /></PrivateRoute>} />
                   {/* Review Routes - reading reviews is public, writing requires auth */}
                   <Route path="/review/:sessionId" element={<PrivateRoute><ReviewPage /></PrivateRoute>} />
                   <Route path="/reviews/:sitterId" element={<SitterReviewsPage />} />
