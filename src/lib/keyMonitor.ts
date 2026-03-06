@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Key Expiration Monitoring Utility
  * 

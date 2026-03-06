@@ -48,5 +48,6 @@ export function validateEnv() {
         }
     }
 
+    // eslint-disable-next-line no-console
     console.info('✅ Environment configuration validated successfully.');
 }

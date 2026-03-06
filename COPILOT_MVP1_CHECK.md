@@ -404,23 +404,23 @@ Based on analysis of the codebase trajectory, current gaps, and PRD post-MVP fea
 
 ### 🟢 Priority 3 — Quality & Security (Before MVP2 Launch)
 
-- [ ] **Configure Firebase production environment**
+- [x] **Configure Firebase production environment**
   - Files: `src/lib/firebase.ts`, `.env.example`
   - Action: Set `VITE_FIREBASE_VAPID_KEY`, `VITE_FIREBASE_API_KEY`, etc. in production environment variables. Remove/configure `e2e/setup/firebase-mock.ts` for staging tests.
 
-- [ ] **Add `no-console` to ESLint config**
+- [x] **Add `no-console` to ESLint config**
   - File: `eslint.config.js`
   - Action: Add `"no-console": ["warn", { allow: ["warn", "error"] }]` to catch remaining `console.log` calls in CI.
 
-- [ ] **Enable TypeScript strict mode incrementally**
+- [x] **Enable TypeScript strict mode incrementally**
   - File: `tsconfig.app.json`
   - Action: Start by enabling `"noImplicitAny": true`. Fix resulting type errors in `src/lib/auth.ts`, `src/hooks/useBookings.ts`, and `src/utils/subscriptions.ts` first.
 
-- [ ] **Split `supabase/types.ts`**
+- [x] **Split `supabase/types.ts`**
   - File: `src/integrations/supabase/types.ts`
   - Action: Regenerate types from Supabase CLI (`supabase gen types typescript`) into separate domain files or keep as a generated artifact with a clear `// DO NOT EDIT — generated` header.
 
-- [ ] **Write missing unit tests for critical paths**
+- [x] **Write missing unit tests for critical paths**
   - Files: `src/hooks/useSession.ts`, `src/hooks/useReviews.ts`, `src/lib/cancellation.ts`, `src/hooks/useChat.ts` (phone/email blocking)
   - Action: Follow the existing Vitest AAA pattern from `src/services/__tests__/payment.test.ts`.
 
