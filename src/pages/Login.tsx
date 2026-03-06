@@ -28,21 +28,8 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            // Detect format and use appropriate authentication method
-            if (isEmail(identifier)) {
-                // Email + password login
-                await handleSignIn(identifier, password);
-            } else if (isPhoneNumber(identifier)) {
-                // Phone + password login
-                // Note: This assumes the backend supports phone + password authentication
-                // If not, we'll need to update the authentication hook
-                await handleSignIn(identifier, password);
-            } else {
-                // Invalid format
-                throw new Error("Geçersiz e-posta veya telefon numarası formatı");
-            }
+            await handleSignIn(email, password);
 
-            // Set session flags to initialize the timeouts
             localStorage.setItem("remember_me", rememberMe.toString());
             localStorage.setItem("session_start_time", Date.now().toString());
 
