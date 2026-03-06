@@ -20,7 +20,7 @@ import { logger } from "@/lib/logger";
 
 const LoadingScreen = () => <div className="min-h-screen flex items-center justify-center">Yükleniyor...</div>;
 
-const PerformanceRouteTracker = () => {
+const PerformanceRouteTracker = (): null => {
   const location = useLocation();
 
   useEffect(() => {
@@ -70,6 +70,7 @@ const HowItWorksPage = lazy(() => import("./pages/about/HowItWorksPage"));
 const DisputesPage = lazy(() => import("./pages/disputes/DisputesPage"));
 const DisputeIntakePage = lazy(() => import("./pages/disputes/DisputeIntakePage"));
 const DisputeHistoryPage = lazy(() => import("./pages/disputes/DisputeHistoryPage"));
+const SitterProfile = lazy(() => import("./pages/profile/SitterProfile"));
 
 import { z } from "zod";
 import { customErrorMap } from "@/lib/zod-error-map";
@@ -178,6 +179,7 @@ const App = () => (
                   <Route path="/messages/:conversationId" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
                   {/* Children Routes */}
                   <Route path="/children" element={<PrivateRoute><ChildrenPage /></PrivateRoute>} />
+                  <Route path="/profile/children/add" element={<PrivateRoute><ChildrenPage /></PrivateRoute>} />
                   {/* Review Routes - reading reviews is public, writing requires auth */}
                   <Route path="/review/:sessionId" element={<PrivateRoute><ReviewPage /></PrivateRoute>} />
                   <Route path="/reviews/:sitterId" element={<SitterReviewsPage />} />
@@ -214,6 +216,7 @@ const App = () => (
                   <Route path="/checkout/confirmation" element={<PrivateRoute><PaymentConfirmationPage /></PrivateRoute>} />
                   <Route path="/sitters/:sitterId" element={<SitterProfilePage />} />
                   <Route path="/sitter/:sitterId" element={<SitterProfilePage />} />
+                  <Route path="/profile" element={<PrivateRoute><SitterProfile /></PrivateRoute>} />
                   <Route path="/favorites" element={<PrivateRoute><FavoritesPage /></PrivateRoute>} />
                   <Route path="/earnings" element={<PrivateRoute><EarningsPage /></PrivateRoute>} />
                   <Route path="/earnings/history" element={<PrivateRoute><PayoutHistoryPage /></PrivateRoute>} />
@@ -222,6 +225,7 @@ const App = () => (
 
                   {/* Auth Routes */}
                   <Route path="/login" element={<Login />} />
+                  <Route path="/unauthorized" element={<NotFound />} />
 
                   {/* Admin Routes */}
                   <Route path="/admin/login" element={<AdminLogin />} />

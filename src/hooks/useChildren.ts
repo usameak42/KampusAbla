@@ -40,9 +40,9 @@ export function useChildren({ parentId }: UseChildrenOptions = {}) {
                     grade: "1", // Default grade since DB doesn't store this yet
                     languages: ["turkish"], // Default language
                     allergies: typeof item.allergies === 'string' ? JSON.parse(item.allergies || '[]') : (item.allergies || []),
-                    dietaryRestrictions: [],
+                    dietaryRestrictions: [] as string[],
                     medicalConditions: item.special_needs ? [item.special_needs] : [],
-                    interests: [],
+                    interests: [] as string[],
                     notes: item.notes || "",
                     createdAt: new Date(item.created_at),
                     updatedAt: new Date(item.updated_at),

@@ -91,7 +91,7 @@ export function useSearchSitters({
                     isFeatured: s.is_featured,
                     // Fields not in RPC response yet, default them safely
                     age: 20, // Default or add to RPC if needed
-                    verifiedAt: undefined,
+                    verifiedAt: undefined as string | undefined,
                     totalSessions: s.review_count
                 }));
 

@@ -57,7 +57,7 @@ export function useApplications({ needPostId }: UseApplicationsOptions) {
                     sitterRating: Number(item.sitter?.rating || 0),
                     sitterReviewCount: item.sitter?.review_count || 0,
                     sitterCompletedSessions: 0,
-                    sitterLanguages: [],
+                    sitterLanguages: [] as string[],
                     isVerified: item.sitter?.verification_status === "verified" || item.sitter?.verification_status === "approved",
                     message: item.message || "",
                     proposedRate: item.proposed_rate ? Number(item.proposed_rate) : undefined,

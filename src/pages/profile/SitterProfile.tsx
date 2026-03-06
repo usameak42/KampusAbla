@@ -33,8 +33,8 @@ export default function SitterProfile() {
         bio: "Merhaba! Ben Ayşe, Boğaziçi Üniversitesi Psikoloji 3. sınıf öğrencisiyim. Çocuklarla ilgilenmek benim tutkum ve 2 yıldır aktif olarak bakıcılık yapıyorum. Özellikle ilkokul yaş grubundaki çocuklarla harika anlaşıyorum.",
         languages: ["Türkçe", "İngilizce", "Almanca"],
         badges: ["verified", "trusted", "gold"],
-        profilePhotoUrl: null,
-        introVideoUrl: null,
+        profilePhotoUrl: null as string | null,
+        introVideoUrl: null as string | null,
         location: "Beşiktaş, İstanbul",
     };
 

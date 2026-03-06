@@ -6,7 +6,7 @@ import { Controller, ControllerProps, FieldPath, FieldValues, FormProvider, useF
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 
-const FocusError = () => {
+const FocusError = (): null => {
   const { formState: { errors, submitCount } } = useFormContext();
 
   React.useEffect(() => {
@@ -23,7 +23,7 @@ const FocusError = () => {
   return null;
 };
 
-const Form = ({ children, ...props }: React.ComponentProps<typeof FormProvider>) => (
+const Form = ({ children, ...props }: React.ComponentProps<typeof FormProvider>): React.ReactElement => (
   <FormProvider {...props}>
     <FocusError />
     {children}

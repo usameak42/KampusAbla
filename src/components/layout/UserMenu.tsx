@@ -23,7 +23,7 @@ export function UserMenu() {
     const role = user?.user_metadata?.role as "parent" | "sitter" | undefined;
     const initials = fullName
         .split(" ")
-        .map((n) => n[0])
+        .map((n: string) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2);

@@ -8,7 +8,7 @@ import React from "react";
 // ---------------------------------------------------------------------------
 
 /** Creates a thenable query-builder mock where every method returns itself. */
-function createQueryBuilder(resolveValue: { data: unknown; error: unknown }) {
+function createQueryBuilder(resolveValue: { data: unknown; error: unknown | null }) {
     const builder: Record<string, unknown> = {};
     // Chain methods all return the builder itself
     ["select", "eq", "order"].forEach((method) => {
@@ -29,8 +29,8 @@ function createQueryBuilder(resolveValue: { data: unknown; error: unknown }) {
     return { builder, insertBuilder };
 }
 
-let queryResolveValue = { data: [] as unknown[], error: null };
-let insertResolveValue = { data: null as unknown, error: null };
+let queryResolveValue: { data: unknown[]; error: unknown | null } = { data: [] as unknown[], error: null };
+let insertResolveValue: { data: unknown; error: unknown | null } = { data: null as unknown, error: null };
 let currentBuilder: Record<string, unknown>;
 let currentInsertBuilder: Record<string, unknown>;
 
@@ -67,8 +67,8 @@ function buildDbRow(overrides: Partial<Record<string, unknown>> = {}) {
         comment: VALID_COMMENT,
         status: "visible",
         created_at: new Date().toISOString(),
-        visible_at: null,
-        reviewer: { full_name: "Anne", profile_photo_url: null },
+        visible_at: null as string | null,
+        reviewer: { full_name: "Anne", profile_photo_url: null as string | null },
         reviewee: { full_name: "Bakıcı Adı" },
         ...overrides,
     };
