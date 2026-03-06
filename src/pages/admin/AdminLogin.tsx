@@ -30,24 +30,36 @@ export default function AdminLogin() {
 
         try {
             const result: any = await handleSignIn(email, password);
-
-            // Note: useAuthentication handleSignIn might navigate or we rely on user metadata check here
-            // If the user is indeed an admin, the next check will pass in the dashboard or AdminRoute
-            const user = result?.user || result?.data?.user;
+            const user = result?.data?.user || result?.user;
             const role = user?.user_metadata?.role;
 
+            // Check user_metadata first
             if (role === "admin") {
                 navigate("/admin/dashboard");
-            } else {
-                // In a real app, sign out immediately if not admin
-                toast({
-                    title: "Yetkisiz Erişim",
-                    description: "Bu bölüme erişmek için yönetici yetkiniz bulunmuyor.",
-                    variant: "destructive",
-                });
+                return;
             }
+
+            // Check user_roles table
+            if (user?.id) {
+                const { data: roleData } = await supabase
+                    .from("user_roles" as any)
+                    .select("role")
+                    .eq("user_id", user.id)
+                    .eq("role", "admin")
+                    .maybeSingle();
+
+                if (roleData) {
+                    navigate("/admin/dashboard");
+                    return;
+                }
+            }
+
+            toast({
+                title: "Yetkisiz Erişim",
+                description: "Bu bölüme erişmek için yönetici yetkiniz bulunmuyor.",
+                variant: "destructive",
+            });
         } catch (error) {
-            // Error toast is handled by useAuthentication
             console.error("Login error:", error);
         }
     };
