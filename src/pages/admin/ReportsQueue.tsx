@@ -192,8 +192,8 @@ export default function ReportsQueue() {
                                                 <TableCell>
                                                     <div className="flex flex-col gap-1">
                                                         <Badge variant="outline" className="w-fit">{report.reason}</Badge>
-                                                        <span className="text-sm truncate max-w-[200px]" title={report.description}>
-                                                            {report.description}
+                                                         <span className="text-sm truncate max-w-[200px]" title={report.description || ""}>
+                                                            {report.description || "-"}
                                                         </span>
                                                     </div>
                                                 </TableCell>
