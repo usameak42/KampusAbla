@@ -50,11 +50,7 @@ export default function ReportsQueue() {
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("reports")
-                .select(`
-          *,
-          reporter:reporter_id(first_name, last_name, email),
-          reported:reported_id(first_name, last_name)
-        `)
+                .select("*")
                 .order("created_at", { ascending: false });
 
             if (error) throw error;
