@@ -8,7 +8,7 @@ import React from "react";
 // ---------------------------------------------------------------------------
 
 /** Creates a thenable query-builder mock where every method returns itself. */
-function createQueryBuilder(resolveValue: { data: unknown; error: unknown }) {
+function createQueryBuilder(resolveValue: { data: unknown; error: unknown | null }) {
     const builder: Record<string, unknown> = {};
     // Chain methods all return the builder itself
     ["select", "eq", "order"].forEach((method) => {
