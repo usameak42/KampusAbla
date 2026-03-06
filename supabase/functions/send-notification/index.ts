@@ -1,228 +1,343 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-// Firebase Admin SDK for Deno
-import * as firebaseAdmin from 'npm:firebase-admin@12.0.0';
 import { handleCorsPreflight, createCorsResponse } from '../_shared/cors.ts';
 
-/**
- * Send Push Notification Edge Function
- * 
- * Sends FCM push notifications to specified users based on their preferences
- * Called by database triggers or application code
- */
-
 interface NotificationRequest {
-    user_ids: string[];
-    title: string;
-    body: string;
-    data?: Record<string, string>;
-    notification_type: 'booking_requests' | 'booking_confirmations' | 'booking_cancellations'
-    | 'messages' | 'session_updates' | 'reviews' | 'marketing';
+  user_ids: string[];
+  title: string;
+  body: string;
+  data?: Record<string, string | number | boolean>;
+  notification_type:
+    | 'booking_requests'
+    | 'booking_confirmations'
+    | 'booking_cancellations'
+    | 'messages'
+    | 'session_updates'
+    | 'reviews'
+    | 'marketing';
 }
 
-// Initialize Firebase Admin SDK (once)
-let firebaseApp: firebaseAdmin.app.App | null = null;
+interface UserTokenRow {
+  token: string;
+  user_id: string;
+}
 
-function initializeFirebase() {
-    if (firebaseApp) return firebaseApp;
+interface NotificationPreferenceRow {
+  user_id: string;
+  booking_requests?: boolean | null;
+  booking_confirmations?: boolean | null;
+  booking_cancellations?: boolean | null;
+  messages?: boolean | null;
+  session_updates?: boolean | null;
+  reviews?: boolean | null;
+  marketing?: boolean | null;
+}
 
-    try {
-        const serviceAccountJson = Deno.env.get('FIREBASE_SERVICE_ACCOUNT');
-        if (!serviceAccountJson) {
-            throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable not set');
-        }
+interface ServiceAccount {
+  project_id: string;
+  private_key: string;
+  client_email: string;
+}
 
-        const serviceAccount = JSON.parse(serviceAccountJson);
+interface DeliveryResult {
+  token: string;
+  userId: string;
+  success: boolean;
+  errorMessage?: string;
+}
 
-        firebaseApp = firebaseAdmin.initializeApp({
-            credential: firebaseAdmin.credential.cert(serviceAccount),
-        });
+function base64UrlEncode(input: string): string {
+  return btoa(input).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
 
-        console.log('Firebase Admin SDK initialized successfully');
-        return firebaseApp;
-    } catch (error) {
-        console.error('Failed to initialize Firebase Admin SDK:', error);
-        throw error;
+async function generateFirebaseJwt(serviceAccount: ServiceAccount): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+
+  const header = {
+    alg: 'RS256',
+    typ: 'JWT',
+  };
+
+  const payload = {
+    iss: serviceAccount.client_email,
+    sub: serviceAccount.client_email,
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+    scope: 'https://www.googleapis.com/auth/firebase.messaging',
+  };
+
+  const headerEncoded = base64UrlEncode(JSON.stringify(header));
+  const payloadEncoded = base64UrlEncode(JSON.stringify(payload));
+  const signingInput = `${headerEncoded}.${payloadEncoded}`;
+
+  const pemContents = serviceAccount.private_key
+    .replace(/-----BEGIN PRIVATE KEY-----/, '')
+    .replace(/-----END PRIVATE KEY-----/, '')
+    .replace(/\n/g, '');
+
+  const binaryKey = Uint8Array.from(atob(pemContents), (char) => char.charCodeAt(0));
+
+  const cryptoKey = await crypto.subtle.importKey(
+    'pkcs8',
+    binaryKey,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey, new TextEncoder().encode(signingInput));
+  const signatureEncoded = base64UrlEncode(String.fromCharCode(...new Uint8Array(signature)));
+
+  return `${signingInput}.${signatureEncoded}`;
+}
+
+async function getFirebaseAccessToken(serviceAccount: ServiceAccount): Promise<string> {
+  const assertion = await generateFirebaseJwt(serviceAccount);
+
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Failed to get Firebase access token: ${errorBody}`);
+  }
+
+  const tokenResponse = (await response.json()) as { access_token?: string };
+  if (!tokenResponse.access_token) {
+    throw new Error('Firebase access token missing in OAuth response');
+  }
+
+  return tokenResponse.access_token;
+}
+
+function normalizeData(data?: Record<string, string | number | boolean>): Record<string, string> {
+  if (!data) return {};
+
+  return Object.entries(data).reduce<Record<string, string>>((acc, [key, value]) => {
+    acc[key] = String(value);
+    return acc;
+  }, {});
+}
+
+function isInvalidTokenError(errorMessage: string): boolean {
+  const normalized = errorMessage.toLowerCase();
+  return (
+    normalized.includes('registration token is not a valid') ||
+    normalized.includes('registration token is not registered') ||
+    normalized.includes('requested entity was not found') ||
+    normalized.includes('invalid argument')
+  );
+}
+
+serve(async (req: Request) => {
+  const preflightResponse = handleCorsPreflight(req);
+  if (preflightResponse) return preflightResponse;
+
+  const origin = req.headers.get('origin') ?? undefined;
+
+  try {
+    const payload = (await req.json()) as NotificationRequest;
+    const { user_ids, title, body, data, notification_type } = payload;
+
+    if (!Array.isArray(user_ids) || user_ids.length === 0) {
+      return createCorsResponse({ error: 'user_ids is required and must not be empty' }, 400, {}, origin);
     }
-}
 
-serve(async (req) => {
-    // Handle CORS preflight
-    const preflightResponse = handleCorsPreflight(req);
-    if (preflightResponse) return preflightResponse;
+    if (!title?.trim() || !body?.trim()) {
+      return createCorsResponse({ error: 'title and body are required' }, 400, {}, origin);
+    }
 
-    const origin = req.headers.get('origin');
+    if (!notification_type) {
+      return createCorsResponse({ error: 'notification_type is required' }, 400, {}, origin);
+    }
 
-    try {
-        // Parse request body
-        const { user_ids, title, body, data, notification_type }: NotificationRequest = await req.json();
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
 
-        // Validate required fields
-        if (!user_ids || user_ids.length === 0) {
-            return createCorsResponse(
-                { error: 'user_ids is required and must not be empty' },
-                400,
-                {},
-                origin
-            );
-        }
+    const { data: tokensData, error: tokensError } = await supabaseAdmin
+      .from('user_fcm_tokens')
+      .select('token, user_id')
+      .in('user_id', user_ids);
 
-        if (!title || !body) {
-            return createCorsResponse(
-                { error: 'title and body are required' },
-                400,
-                {},
-                origin
-            );
-        }
+    if (tokensError) {
+      throw tokensError;
+    }
 
-        if (!notification_type) {
-            return createCorsResponse(
-                { error: 'notification_type is required' },
-                400,
-                {},
-                origin
-            );
-        }
+    const tokens = (tokensData ?? []) as UserTokenRow[];
 
-        // Initialize Firebase
-        initializeFirebase();
+    if (tokens.length === 0) {
+      return createCorsResponse(
+        {
+          message: 'No FCM tokens found',
+          success: 0,
+          failures: 0,
+        },
+        200,
+        {},
+        origin
+      );
+    }
 
-        // Create Supabase Admin client
-        const supabaseAdmin = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-            {
-                auth: {
-                    autoRefreshToken: false,
-                    persistSession: false,
+    const { data: preferencesData, error: preferencesError } = await supabaseAdmin
+      .from('notification_preferences')
+      .select('*')
+      .in('user_id', user_ids);
+
+    if (preferencesError) {
+      console.error('Error fetching notification preferences:', preferencesError);
+    }
+
+    const preferences = (preferencesData ?? []) as NotificationPreferenceRow[];
+
+    const allowedTokens = tokens.filter((tokenRow) => {
+      const userPreference = preferences.find((pref) => pref.user_id === tokenRow.user_id);
+      if (!userPreference) return true;
+
+      const preferenceValue = userPreference[notification_type];
+      return preferenceValue !== false;
+    });
+
+    if (allowedTokens.length === 0) {
+      return createCorsResponse(
+        {
+          message: 'All users have disabled this notification type',
+          success: 0,
+          failures: 0,
+        },
+        200,
+        {},
+        origin
+      );
+    }
+
+    const serviceAccountRaw = Deno.env.get('FIREBASE_SERVICE_ACCOUNT');
+    if (!serviceAccountRaw) {
+      return createCorsResponse(
+        {
+          message: 'Firebase service account is not configured',
+          success: 0,
+          failures: 0,
+        },
+        200,
+        {},
+        origin
+      );
+    }
+
+    const serviceAccount = JSON.parse(serviceAccountRaw) as ServiceAccount;
+    const accessToken = await getFirebaseAccessToken(serviceAccount);
+    const normalizedData = normalizeData(data);
+
+    const results = await Promise.all(
+      allowedTokens.map(async (tokenRow): Promise<DeliveryResult> => {
+        const response = await fetch(
+          `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              message: {
+                token: tokenRow.token,
+                notification: {
+                  title,
+                  body,
                 },
-            }
+                data: normalizedData,
+                android: {
+                  priority: 'high',
+                },
+                apns: {
+                  headers: {
+                    'apns-priority': '10',
+                  },
+                },
+              },
+            }),
+          }
         );
 
-        // Step 1: Get FCM tokens for users
-        const { data: tokens, error: tokensError } = await supabaseAdmin
-            .from('user_fcm_tokens')
-            .select('token, user_id')
-            .in('user_id', user_ids);
-
-        if (tokensError) {
-            console.error('Error fetching FCM tokens:', tokensError);
-            throw tokensError;
-        }
-
-        if (!tokens || tokens.length === 0) {
-            console.log('No FCM tokens found for specified users');
-            return createCorsResponse({
-                message: 'No FCM tokens found',
-                success: 0,
-                failures: 0
-            }, 200, {}, origin);
-        }
-
-        // Step 2: Check notification preferences
-        const { data: preferences, error: preferencesError } = await supabaseAdmin
-            .from('notification_preferences')
-            .select('*')
-            .in('user_id', user_ids);
-
-        if (preferencesError) {
-            console.error('Error fetching notification preferences:', preferencesError);
-            // Continue anyway - default to allowing notifications
-        }
-
-        // Step 3: Filter tokens based on preferences
-        const allowedTokens = tokens.filter((tokenRow) => {
-            const userPref = preferences?.find((p) => p.user_id === tokenRow.user_id);
-            if (!userPref) return true; // Default: allow if no preferences set
-
-            // Check if this notification type is enabled for the user
-            const isEnabled = userPref[notification_type];
-            return isEnabled !== false;
-        });
-
-        if (allowedTokens.length === 0) {
-            console.log('All users have disabled this notification type');
-            return createCorsResponse({
-                message: 'All users have disabled this notification type',
-                success: 0,
-                failures: 0
-            }, 200, {}, origin);
-        }
-
-        // Step 4: Send notifications via FCM
-        const messaging = firebaseAdmin.messaging();
-        const messages = allowedTokens.map((tokenRow) => ({
+        if (response.ok) {
+          return {
             token: tokenRow.token,
-            notification: {
-                title,
-                body,
-            },
-            data: data || {},
-            android: {
-                priority: 'high' as const,
-            },
-            apns: {
-                headers: {
-                    'apns-priority': '10',
-                },
-            },
-        }));
-
-        const response = await messaging.sendEach(messages);
-
-        // Step 5: Log failures and update token usage
-        const failures: Array<{ token: string; error: string }> = [];
-        const successfulTokens: string[] = [];
-
-        response.responses.forEach((resp, idx) => {
-            if (resp.success) {
-                successfulTokens.push(allowedTokens[idx].token);
-            } else {
-                failures.push({
-                    token: allowedTokens[idx].token,
-                    error: resp.error?.message || 'Unknown error',
-                });
-            }
-        });
-
-        if (failures.length > 0) {
-            console.error('Some notifications failed to send:', failures);
-
-            // Delete invalid tokens
-            const invalidTokens = failures
-                .filter(f => f.error.includes('invalid') || f.error.includes('not-registered'))
-                .map(f => f.token);
-
-            if (invalidTokens.length > 0) {
-                await supabaseAdmin
-                    .from('user_fcm_tokens')
-                    .delete()
-                    .in('token', invalidTokens);
-                console.log(`Deleted ${invalidTokens.length} invalid tokens`);
-            }
+            userId: tokenRow.user_id,
+            success: true,
+          };
         }
 
-        // Step 6: Update last_used_at for successful deliveries
-        if (successfulTokens.length > 0) {
-            await supabaseAdmin
-                .from('user_fcm_tokens')
-                .update({ last_used_at: new Date().toISOString() })
-                .in('token', successfulTokens);
+        let errorMessage = 'Unknown FCM error';
+        try {
+          const errorJson = (await response.json()) as { error?: { message?: string } };
+          errorMessage = errorJson.error?.message ?? `${response.status} ${response.statusText}`;
+        } catch {
+          errorMessage = `${response.status} ${response.statusText}`;
         }
 
-        // Return results
-        return createCorsResponse({
-            success: response.successCount,
-            failures: response.failureCount,
-            details: failures.length > 0 ? failures : undefined,
-        }, 200, {}, origin);
+        return {
+          token: tokenRow.token,
+          userId: tokenRow.user_id,
+          success: false,
+          errorMessage,
+        };
+      })
+    );
 
-    } catch (error) {
-        console.error('Error in send-notification function:', error);
-        return createCorsResponse({
-            error: error instanceof Error ? error.message : 'Internal server error'
-        }, 500, {}, origin);
+    const successfulTokens = results.filter((result) => result.success).map((result) => result.token);
+    const failures = results.filter((result) => !result.success);
+
+    const invalidTokens = failures
+      .filter((failure) => isInvalidTokenError(failure.errorMessage ?? ''))
+      .map((failure) => failure.token);
+
+    if (invalidTokens.length > 0) {
+      await supabaseAdmin.from('user_fcm_tokens').delete().in('token', invalidTokens);
     }
+
+    if (successfulTokens.length > 0) {
+      await supabaseAdmin
+        .from('user_fcm_tokens')
+        .update({ last_used_at: new Date().toISOString() })
+        .in('token', successfulTokens);
+    }
+
+    return createCorsResponse(
+      {
+        success: successfulTokens.length,
+        failures: failures.length,
+        details: failures.map((failure) => ({ token: failure.token, error: failure.errorMessage })),
+      },
+      200,
+      {},
+      origin
+    );
+  } catch (error) {
+    console.error('Error in send-notification function:', error);
+    return createCorsResponse(
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      500,
+      {},
+      origin
+    );
+  }
 });
