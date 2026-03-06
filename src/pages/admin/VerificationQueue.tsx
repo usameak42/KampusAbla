@@ -64,14 +64,11 @@ export default function VerificationQueue() {
                     *,
                     sitters (
                         full_name,
-                        university,
-                        users (
-                            email
-                        )
+                        university
                     )
                 `)
                 .eq("verification_status", "pending")
-                .order("submitted_at", { ascending: true });
+                .order("created_at", { ascending: true });
 
             if (error) throw error;
 
@@ -79,9 +76,9 @@ export default function VerificationQueue() {
                 id: item.id,
                 sitterId: item.sitter_id,
                 sitterName: item.sitters?.full_name || "Bilinmiyor",
-                sitterEmail: item.sitters?.users?.email || "-",
+                sitterEmail: item.university_email || "-",
                 university: item.sitters?.university || "-",
-                submittedAt: item.submitted_at || item.created_at,
+                submittedAt: item.created_at,
                 studentIdUrl: item.student_id_url,
                 governmentIdUrl: item.government_id_url,
                 selfieUrl: item.selfie_url,
@@ -110,8 +107,6 @@ export default function VerificationQueue() {
                 .from("sitter_verifications")
                 .update({
                     verification_status: "verified",
-                    reviewed_at: new Date().toISOString(),
-                    // verified_by: adminId // TODO: Add admin ID tracking if needed
                 })
                 .eq("id", verification.id);
 
@@ -122,7 +117,6 @@ export default function VerificationQueue() {
                 .from("sitters")
                 .update({
                     verification_status: "verified",
-                    verified_at: new Date().toISOString()
                 })
                 .eq("id", verification.sitterId);
 
@@ -166,8 +160,6 @@ export default function VerificationQueue() {
                 .from("sitter_verifications")
                 .update({
                     verification_status: "rejected",
-                    rejection_reason: rejectionReason,
-                    reviewed_at: new Date().toISOString(),
                 })
                 .eq("id", selectedVerification.id);
 

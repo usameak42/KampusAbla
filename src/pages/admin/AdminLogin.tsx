@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuthentication } from "@/hooks/useAuthentication";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminLogin() {
     const navigate = useNavigate();
@@ -29,24 +30,36 @@ export default function AdminLogin() {
 
         try {
             const result: any = await handleSignIn(email, password);
-
-            // Note: useAuthentication handleSignIn might navigate or we rely on user metadata check here
-            // If the user is indeed an admin, the next check will pass in the dashboard or AdminRoute
-            const user = result?.user || result?.data?.user;
+            const user = result?.data?.user || result?.user;
             const role = user?.user_metadata?.role;
 
+            // Check user_metadata first
             if (role === "admin") {
                 navigate("/admin/dashboard");
-            } else {
-                // In a real app, sign out immediately if not admin
-                toast({
-                    title: "Yetkisiz Erişim",
-                    description: "Bu bölüme erişmek için yönetici yetkiniz bulunmuyor.",
-                    variant: "destructive",
-                });
+                return;
             }
+
+            // Check user_roles table
+            if (user?.id) {
+                const { data: roleData } = await supabase
+                    .from("user_roles" as any)
+                    .select("role")
+                    .eq("user_id", user.id)
+                    .eq("role", "admin")
+                    .maybeSingle();
+
+                if (roleData) {
+                    navigate("/admin/dashboard");
+                    return;
+                }
+            }
+
+            toast({
+                title: "Yetkisiz Erişim",
+                description: "Bu bölüme erişmek için yönetici yetkiniz bulunmuyor.",
+                variant: "destructive",
+            });
         } catch (error) {
-            // Error toast is handled by useAuthentication
             console.error("Login error:", error);
         }
     };
@@ -135,28 +148,6 @@ export default function AdminLogin() {
                                 )}
                             </Button>
 
-                            <div className="mt-6 pt-6 border-t border-slate-800">
-                                <p className="text-xs text-slate-500 mb-3 text-center uppercase tracking-widest font-semibold">Demo Erişimi</p>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="w-full border-purple-500/30 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 transition-all gap-2"
-                                    onClick={() => {
-                                        localStorage.setItem("ka_demo_admin", "true");
-                                        navigate("/admin/dashboard");
-                                        toast({
-                                            title: "Demo Modu Aktif",
-                                            description: "Yönetici paneline demo erişimi sağlandı.",
-                                        });
-                                    }}
-                                >
-                                    <ShieldCheck className="h-4 w-4" />
-                                    Demo Modu (Gözlemci)
-                                </Button>
-                                <p className="text-[10px] text-slate-600 mt-2 text-center">
-                                    Kimlik doğrulama olmadan paneli görüntüleyin.
-                                </p>
-                            </div>
                         </form>
                     </CardContent>
                 </Card>

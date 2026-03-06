@@ -30,21 +30,11 @@ interface Report {
     id: string;
     reporter_id: string;
     reported_id: string;
-    session_id?: string;
+    booking_id?: string;
     reason: string;
-    description: string;
-    status: "pending" | "investigating" | "resolved" | "dismissed";
+    description: string | null;
+    status: string;
     created_at: string;
-    admin_notes?: string;
-    reporter?: {
-        first_name: string;
-        last_name: string;
-        email: string;
-    };
-    reported?: {
-        first_name: string;
-        last_name: string;
-    };
 }
 
 export default function ReportsQueue() {
@@ -60,11 +50,7 @@ export default function ReportsQueue() {
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("reports")
-                .select(`
-          *,
-          reporter:reporter_id(first_name, last_name, email),
-          reported:reported_id(first_name, last_name)
-        `)
+                .select("*")
                 .order("created_at", { ascending: false });
 
             if (error) throw error;
@@ -79,7 +65,6 @@ export default function ReportsQueue() {
                 .from("reports")
                 .update({
                     status,
-                    admin_notes: notes,
                     updated_at: new Date().toISOString()
                 })
                 .eq("id", id);
@@ -101,7 +86,7 @@ export default function ReportsQueue() {
     const handleAction = (report: Report, action: "resolve" | "dismiss" | "investigate") => {
         setSelectedReport(report);
         setActionType(action);
-        setResolutionNote(report.admin_notes || "");
+        setResolutionNote("");
         setIsResolutionDialogOpen(true);
     };
 
@@ -199,19 +184,16 @@ export default function ReportsQueue() {
                                                     {new Date(report.created_at).toLocaleDateString()}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex flex-col">
-                                                        <span>{report.reporter?.first_name} {report.reporter?.last_name}</span>
-                                                        <span className="text-xs text-muted-foreground">{report.reporter?.email}</span>
-                                                    </div>
+                                                    <span className="text-sm font-mono">{report.reporter_id.slice(0, 8)}...</span>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {report.reported?.first_name} {report.reported?.last_name}
+                                                    <span className="text-sm font-mono">{report.reported_id.slice(0, 8)}...</span>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex flex-col gap-1">
                                                         <Badge variant="outline" className="w-fit">{report.reason}</Badge>
-                                                        <span className="text-sm truncate max-w-[200px]" title={report.description}>
-                                                            {report.description}
+                                                         <span className="text-sm truncate max-w-[200px]" title={report.description || ""}>
+                                                            {report.description || "-"}
                                                         </span>
                                                     </div>
                                                 </TableCell>
@@ -267,17 +249,17 @@ export default function ReportsQueue() {
                                                 {new Date(report.created_at).toLocaleDateString()}
                                             </TableCell>
                                             <TableCell>
-                                                {report.reporter?.first_name} {report.reporter?.last_name}
+                                                <span className="text-sm font-mono">{report.reporter_id.slice(0, 8)}...</span>
                                             </TableCell>
                                             <TableCell>
-                                                {report.reported?.first_name} {report.reported?.last_name}
+                                                <span className="text-sm font-mono">{report.reported_id.slice(0, 8)}...</span>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant="outline">{report.reason}</Badge>
                                             </TableCell>
                                             <TableCell>{getStatusBadge(report.status)}</TableCell>
-                                            <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate" title={report.admin_notes}>
-                                                {report.admin_notes || "-"}
+                                            <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                                                -
                                             </TableCell>
                                         </TableRow>
                                     ))}
