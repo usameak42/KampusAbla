@@ -18,24 +18,11 @@ export default function Login() {
     const location = useLocation();
     const { handleSignIn, isLoading } = useAuthentication();
 
-    // Unified state - can be email or phone
-    const [identifier, setIdentifier] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
 
     const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/";
-
-    // Detect if input is email or phone number
-    const isEmail = (value: string): boolean => {
-        return value.includes("@");
-    };
-
-    const isPhoneNumber = (value: string): boolean => {
-        // Turkish phone format: starts with +90 or 0, followed by 10 digits
-        const phonePattern = /^(\+90|0)?[1-9]\d{9}$/;
-        const cleanValue = value.replace(/\s/g, "");
-        return phonePattern.test(cleanValue);
-    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
