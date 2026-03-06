@@ -404,7 +404,7 @@ Based on analysis of the codebase trajectory, current gaps, and PRD post-MVP fea
 
 ### 🟢 Priority 3 — Quality & Security (Before MVP2 Launch)
 
-- [ ] **Configure Firebase production environment**
+- [x] **Configure Firebase production environment**
   - Files: `src/lib/firebase.ts`, `.env.example`
   - Action: Set `VITE_FIREBASE_VAPID_KEY`, `VITE_FIREBASE_API_KEY`, etc. in production environment variables. Remove/configure `e2e/setup/firebase-mock.ts` for staging tests.
 
