@@ -7,8 +7,9 @@ const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 const WARNING_BEFORE = 2 * 60 * 1000; // 2 minutes before timeout
 const PARENT_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
 const SITTER_TIMEOUT = 8 * 60 * 60 * 1000; // 8 hours
-const ADMIN_TIMEOUT = 50 * 60 * 1000; // 50 minutes
-const ADMIN_WARNING_BEFORE = 10 * 60 * 1000; // 10 minutes before admin timeout
+const ADMIN_TIMEOUT = 50 * 60 * 1000; // 50 minutes absolute session limit for admins
+// Admin warning triggers 10 minutes before the absolute timeout (i.e., at 40 minutes)
+const ADMIN_WARNING_BEFORE = 10 * 60 * 1000;
 const REMEMBER_ME_TIMEOUT = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export function useSessionTimeout() {

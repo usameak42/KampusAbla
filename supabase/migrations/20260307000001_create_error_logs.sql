@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS public.error_logs (
 -- Index for querying by user and time
 CREATE INDEX IF NOT EXISTS idx_error_logs_user_id ON public.error_logs (user_id);
 CREATE INDEX IF NOT EXISTS idx_error_logs_created_at ON public.error_logs (created_at DESC);
+-- Composite index for admin queries filtered by time with optional user
+CREATE INDEX IF NOT EXISTS idx_error_logs_created_at_user ON public.error_logs (created_at DESC, user_id);
 
 -- Enable Row Level Security
 ALTER TABLE public.error_logs ENABLE ROW LEVEL SECURITY;

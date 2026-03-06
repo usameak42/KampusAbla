@@ -23,6 +23,8 @@ interface ErrorLog {
     createdAt: string;
 }
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
 export default function AdminErrorLogs() {
     const { toast } = useToast();
     const [logs, setLogs] = useState<ErrorLog[]>([]);
@@ -112,7 +114,7 @@ export default function AdminErrorLogs() {
                         <CardContent className="pt-4">
                             <p className="text-sm text-muted-foreground">Son 24 Saat</p>
                             <p className="text-2xl font-bold">
-                                {logs.filter(l => new Date(l.createdAt) > new Date(Date.now() - 24 * 3600_000)).length}
+                                {logs.filter(l => new Date(l.createdAt) > new Date(Date.now() - ONE_DAY_MS)).length}
                             </p>
                         </CardContent>
                     </Card>

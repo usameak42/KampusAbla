@@ -40,12 +40,15 @@ export function validateEmailAscii(email: string): string | null {
   const nonAsciiChars = [...email].filter((ch) => ch.charCodeAt(0) > 127);
   if (nonAsciiChars.length === 0) return null;
 
-  const unique = [...new Set(nonAsciiChars)];
+  const unique = [...new Set(nonAsciiChars)].slice(0, 5); // limit to 5 unique chars
   const suggestion = suggestAsciiEmail(email);
 
   const replacementHints = unique
     .map((ch) => (NON_ASCII_REPLACEMENTS[ch] ? `${ch} → ${NON_ASCII_REPLACEMENTS[ch]}` : ch))
     .join(", ");
 
-  return `E-posta adresi yalnızca ASCII karakterler içermelidir (${replacementHints}). Öneri: ${suggestion}`;
+  // Keep the message concise
+  const truncatedSuggestion = suggestion.length > 50 ? suggestion.slice(0, 50) + "…" : suggestion;
+
+  return `E-posta sadece ASCII karakterler içermelidir (${replacementHints}). Öneri: ${truncatedSuggestion}`;
 }
