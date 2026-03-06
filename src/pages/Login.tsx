@@ -52,19 +52,16 @@ export default function Login() {
                 <CardContent>
                     <form onSubmit={handleLogin} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="identifier">E-posta veya Telefon Numarası</Label>
+                            <Label htmlFor="email">E-posta Adresi</Label>
                             <Input
-                                id="identifier"
-                                type="text"
-                                placeholder="ornek@email.com veya +90 555 123 45 67"
-                                value={identifier}
-                                onChange={(e) => setIdentifier(e.target.value)}
+                                id="email"
+                                type="email"
+                                placeholder="ornek@email.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
                                 disabled={isLoading}
                             />
-                            <p className="text-xs text-muted-foreground">
-                                E-posta adresinizi veya telefon numaranızı giriniz
-                            </p>
                         </div>
 
                         <div className="space-y-2">
