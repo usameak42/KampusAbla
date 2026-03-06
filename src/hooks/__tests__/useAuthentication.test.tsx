@@ -106,7 +106,7 @@ describe("useAuthentication Hook", () => {
         mockSignIn.mockReturnValue(promise);
 
         // Start sign in
-        let authPromise: Promise<void>;
+        let authPromise: Promise<any>;
         act(() => {
             authPromise = result.current.handleSignIn("test@example.com", "password");
         });

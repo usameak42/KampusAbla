@@ -15,11 +15,12 @@ export function useAuthentication() {
     const handleSignIn = async (email: string, password: string) => {
         setIsLoading(true);
         try {
-            await auth.signIn(email, password);
+            const result = await auth.signIn(email, password);
             toast({
                 title: "Welcome back!",
                 description: "You've successfully signed in.",
             });
+            return result;
         } catch (error) {
             toast({
                 title: "Sign in failed",
