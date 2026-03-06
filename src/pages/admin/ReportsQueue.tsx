@@ -30,21 +30,11 @@ interface Report {
     id: string;
     reporter_id: string;
     reported_id: string;
-    session_id?: string;
+    booking_id?: string;
     reason: string;
-    description: string;
-    status: "pending" | "investigating" | "resolved" | "dismissed";
+    description: string | null;
+    status: string;
     created_at: string;
-    admin_notes?: string;
-    reporter?: {
-        first_name: string;
-        last_name: string;
-        email: string;
-    };
-    reported?: {
-        first_name: string;
-        last_name: string;
-    };
 }
 
 export default function ReportsQueue() {
