@@ -65,7 +65,6 @@ export default function ReportsQueue() {
                 .from("reports")
                 .update({
                     status,
-                    admin_notes: notes,
                     updated_at: new Date().toISOString()
                 })
                 .eq("id", id);
