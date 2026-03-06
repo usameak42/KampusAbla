@@ -117,7 +117,6 @@ export default function VerificationQueue() {
                 .from("sitters")
                 .update({
                     verification_status: "verified",
-                    verified_at: new Date().toISOString()
                 })
                 .eq("id", verification.sitterId);
 
