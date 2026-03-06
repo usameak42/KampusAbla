@@ -160,8 +160,6 @@ export default function VerificationQueue() {
                 .from("sitter_verifications")
                 .update({
                     verification_status: "rejected",
-                    rejection_reason: rejectionReason,
-                    reviewed_at: new Date().toISOString(),
                 })
                 .eq("id", selectedVerification.id);
 
