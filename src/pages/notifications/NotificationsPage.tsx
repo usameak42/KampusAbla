@@ -71,7 +71,7 @@ export default function NotificationsPage() {
                         <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => navigate("/settings/notifications")}
+                            onClick={() => navigate("/settings")}
                             title="Bildirim Ayarları"
                         >
                             <Settings className="h-4 w-4" />
