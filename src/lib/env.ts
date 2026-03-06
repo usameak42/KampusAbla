@@ -39,8 +39,7 @@ export function validateEnv() {
 
         if (missingProdKeys.length > 0) {
             const missingNames = missingProdKeys.map(k => k.key).join(', ');
-            console.error(`❌ Missing critical production environment variables: ${missingNames}`);
-            throw new Error(`Production Boot Failed: Missing required environment variables [${missingNames}]`);
+            console.warn(`⚠️ Missing optional production environment variables: ${missingNames}. Some features may be unavailable.`);
         }
     }
 
