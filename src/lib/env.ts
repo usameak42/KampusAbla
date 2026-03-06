@@ -22,12 +22,8 @@ export function validateEnv() {
     const parsed = envSchema.safeParse(envVars);
 
     if (!parsed.success) {
-        if (import.meta.env.DEV) {
-            console.warn('⚠️ Missing environment variables (Supabase features disabled):', parsed.error.format());
-            return;
-        }
-        console.error('❌ Invalid environment variables:', parsed.error.format());
-        throw new Error('Invalid or missing essential environment variables. Check console for details.');
+        console.warn('⚠️ Missing environment variables:', parsed.error.format());
+        return;
     }
 
     // 2. Strict validation for Production Readiness
