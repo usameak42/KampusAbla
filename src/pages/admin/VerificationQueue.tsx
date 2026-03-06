@@ -107,8 +107,6 @@ export default function VerificationQueue() {
                 .from("sitter_verifications")
                 .update({
                     verification_status: "verified",
-                    reviewed_at: new Date().toISOString(),
-                    // verified_by: adminId // TODO: Add admin ID tracking if needed
                 })
                 .eq("id", verification.id);
 
