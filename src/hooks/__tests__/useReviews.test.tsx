@@ -29,8 +29,8 @@ function createQueryBuilder(resolveValue: { data: unknown; error: unknown | null
     return { builder, insertBuilder };
 }
 
-let queryResolveValue = { data: [] as unknown[], error: null };
-let insertResolveValue = { data: null as unknown, error: null };
+let queryResolveValue: { data: unknown[]; error: unknown | null } = { data: [] as unknown[], error: null };
+let insertResolveValue: { data: unknown; error: unknown | null } = { data: null as unknown, error: null };
 let currentBuilder: Record<string, unknown>;
 let currentInsertBuilder: Record<string, unknown>;
 
