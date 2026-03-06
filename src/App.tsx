@@ -163,6 +163,7 @@ const App = () => (
                   <Route path="/my-needs/:needPostId/applications" element={<PrivateRoute><ViewApplications /></PrivateRoute>} />
                   {/* Bookings Routes */}
                   <Route path="/bookings" element={<PrivateRoute><MyBookings /></PrivateRoute>} />
+                  <Route path="/bookings/:bookingId" element={<PrivateRoute><BookingDetail /></PrivateRoute>} />
                   <Route path="/calendar" element={<PrivateRoute><CalendarPage /></PrivateRoute>} />
 
                   {/* Sidebar Aliases */}
