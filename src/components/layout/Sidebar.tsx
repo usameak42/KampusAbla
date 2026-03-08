@@ -46,11 +46,11 @@ export function Sidebar({ role }: SidebarProps) {
     ];
 
     const menuItems = role === "parent" ? parentMenuItems : sitterMenuItems;
-    const sidebarColor = role === "parent" ? "bg-blue-50" : "bg-green-50";
-    const activeColor = role === "parent" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700";
+    const sidebarColor = role === "parent" ? "bg-primary/5" : "bg-accent/10";
+    const activeColor = role === "parent" ? "bg-primary/10 text-primary" : "bg-accent/20 text-accent-foreground";
 
     return (
-        <div className={cn("w-64 min-h-screen border-r border-gray-200", sidebarColor)}>
+        <div className={cn("w-64 min-h-screen border-r border-border", sidebarColor)}>
             <nav className="pt-20 px-3 space-y-1">
                 {menuItems.map((item) => {
                     const Icon = item.icon;
@@ -66,7 +66,7 @@ export function Sidebar({ role }: SidebarProps) {
                                 "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                                 isActive
                                     ? activeColor
-                                    : "text-gray-700 hover:bg-gray-100"
+                                    : "text-muted-foreground hover:bg-muted"
                             )}
                         >
                             <Icon className="h-5 w-5" />
