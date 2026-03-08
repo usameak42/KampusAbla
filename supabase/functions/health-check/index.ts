@@ -40,7 +40,7 @@ serve(async (req) => {
             JSON.stringify({
                 status: 'unhealthy',
                 database: 'disconnected',
-                error: error.message,
+                error: error instanceof Error ? error.message : 'Unknown error',
                 timestamp: new Date().toISOString()
             }),
             {

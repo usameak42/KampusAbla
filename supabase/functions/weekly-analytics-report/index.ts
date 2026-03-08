@@ -70,7 +70,7 @@ serve(async (req) => {
     if (safetyRes.error) throw safetyRes.error;
     if (financialRes.error) throw financialRes.error;
 
-    const safety = safetyRes.data ?? {};
+    const safety: Record<string, any> = safetyRes.data ?? {};
     const topEarners = financialRes.data ?? [];
 
     const topEarnersHtml = topEarners

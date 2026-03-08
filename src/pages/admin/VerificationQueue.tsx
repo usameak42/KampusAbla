@@ -70,7 +70,7 @@ export default function VerificationQueue() {
 
             // Fetch sitter details separately to avoid FK join issues
             const sitterIds = [...new Set(verifications.map((v: any) => v.sitter_id).filter(Boolean))];
-            const { data: sittersData } = sitterIds.length
+            const { data: sittersData }: { data: { id: string; full_name: string; university: string }[] | null } = sitterIds.length
                 ? await supabase
                     .from("sitters")
                     .select("id, full_name, university")

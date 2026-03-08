@@ -108,7 +108,7 @@ export default function ParentDashboard() {
 
             // Fetch sitter names separately
             const sitterIds = [...new Set(bookings.map((b: any) => b.sitter_id).filter(Boolean))];
-            const { data: sittersData } = sitterIds.length
+            const { data: sittersData }: { data: { id: string; full_name: string }[] | null } = sitterIds.length
                 ? await supabase
                     .from("sitters")
                     .select("id, full_name")
@@ -126,7 +126,7 @@ export default function ParentDashboard() {
                 .in("booking_id", bookingIds);
 
             const childIds = [...new Set((bookingChildrenData || []).map((bc: any) => bc.child_id).filter(Boolean))];
-            const { data: childrenData } = childIds.length
+            const { data: childrenData }: { data: { id: string; name: string }[] | null } = childIds.length
                 ? await supabase
                     .from("children")
                     .select("id, name")
