@@ -52,13 +52,13 @@ export function SitterStep4({ formData, updateFormData, onNext, onBack }: Sitter
             const filePath = `${user.id}/${fileName}`; // simplified path since bucket is for avatars
 
             const { error: uploadError } = await supabase.storage
-                .from("avatars")
+                .from("profile-photos")
                 .upload(filePath, file);
 
             if (uploadError) throw uploadError;
 
             const { data: { publicUrl } } = supabase.storage
-                .from("avatars")
+                .from("profile-photos")
                 .getPublicUrl(filePath);
 
             setProfilePhotoUrl(publicUrl);

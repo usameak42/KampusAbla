@@ -100,7 +100,7 @@ export function DocumentUpload({
             const sitterId = sitterData.id;
             const fileExt = file.name.split(".").pop();
             const fileName = `${documentType}-${Date.now()}.${fileExt}`;
-            const filePath = `verification-documents/${sitterId}/${documentType}/${fileName}`;
+            const filePath = `${sitterId}/${documentType}/${fileName}`;
 
             // Upload to Supabase Storage
             const { error: uploadError, data } = await supabase.storage
@@ -169,11 +169,12 @@ export function DocumentUpload({
 
         try {
             // Extract file path from URL
-            const path = currentFileUrl.split("/verification-documents/")[1];
+            const urlParts = currentFileUrl.split("/verification-documents/");
+            const path = urlParts[urlParts.length - 1];
 
             await supabase.storage
                 .from("verification-documents")
-                .remove([`verification-documents/${path}`]);
+                .remove([path]);
 
             onUploadComplete("");
             toast({ title: "Dosya silindi" });
