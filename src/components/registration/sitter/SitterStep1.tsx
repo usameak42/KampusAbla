@@ -282,7 +282,7 @@ export function SitterStep1({ formData, updateFormData, onNext, onBack }: Sitter
                     <PhoneInput
                         id="phone"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
                         required
                         disabled={isLoading}
                         error={false}

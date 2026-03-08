@@ -94,7 +94,7 @@ function getWindowStart(windowMinutes: number): Date {
     const roundedMinutes = Math.floor(minutes / windowMinutes) * windowMinutes;
 
     const windowStart = new Date(now);
-    windowStart.setMinutes(roundedMinutes, 0, 0, 0);
+    windowStart.setMinutes(roundedMinutes, 0, 0);
 
     return windowStart;
 }

@@ -179,7 +179,7 @@ serve(async (req) => {
         console.error('Payment processing error:', error)
         return createCorsResponse({
             success: false,
-            error: error.message || 'Payment processing failed',
+            error: error instanceof Error ? error.message : 'Payment processing failed',
         }, 400, {}, origin)
     }
 })

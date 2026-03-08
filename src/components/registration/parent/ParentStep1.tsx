@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OTPInput } from "@/components/auth/OTPInput";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, ArrowLeft, CheckCircle2, Mail } from "lucide-react";
+import { Loader2, ArrowLeft, CheckCircle2, Mail, Info } from "lucide-react";
 import { ParentFormData } from "@/pages/register/ParentRegistration";
 import { PhoneInput } from "@/components/ui/phone-input";
 import {

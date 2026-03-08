@@ -93,7 +93,7 @@ export const createCorsResponse = (
     body: string | Record<string, any>,
     status: number = 200,
     headers: Record<string, string> = {},
-    requestOrigin?: string
+    requestOrigin?: string | null
 ): Response => {
     const corsHeaders = getCorsHeaders(requestOrigin);
 

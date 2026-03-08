@@ -109,7 +109,7 @@ serve(async (req) => {
         return new Response(
             JSON.stringify({
                 success: false,
-                error: error.message || 'Sub-merchant creation failed',
+                error: error instanceof Error ? error.message : 'Sub-merchant creation failed',
             }),
             {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },

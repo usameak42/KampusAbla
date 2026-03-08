@@ -229,13 +229,13 @@ serve(async (req) => {
                 Deno.env.get('SUPABASE_URL') ?? '',
                 Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
             );
-            await logWebhookEvent(supabaseClient, event, 'failed', error.message);
+            await logWebhookEvent(supabaseClient, event, 'failed', error instanceof Error ? error.message : 'Unknown error');
         } catch (logError) {
             console.error('Failed to log error:', logError);
         }
 
         return createCorsResponse(
-            { error: error.message },
+            { error: error instanceof Error ? error.message : 'Unknown error' },
             400,
             {},
             origin

@@ -126,7 +126,7 @@ export default function ParentDashboard() {
                 .in("booking_id", bookingIds);
 
             const childIds = [...new Set((bookingChildrenData || []).map((bc: any) => bc.child_id).filter(Boolean))];
-            const { data: childrenData } = childIds.length
+            const { data: childrenData }: { data: { id: string; name: string }[] | null } = childIds.length
                 ? await supabase
                     .from("children")
                     .select("id, name")

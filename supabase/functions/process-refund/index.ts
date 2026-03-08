@@ -144,7 +144,7 @@ serve(async (req) => {
         return new Response(
             JSON.stringify({
                 success: false,
-                error: error.message || 'Refund processing failed',
+                error: error instanceof Error ? error.message : 'Refund processing failed',
             }),
             {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
