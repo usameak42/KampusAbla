@@ -155,14 +155,12 @@ serve(async (req) => {
 
         const { error: dbError } = await supabaseClient.from('transactions').insert({
             booking_id: paymentRequest.bookingId,
-            parent_id: user.id,
+            sitter_id: user.id,
             amount: totalAmount,
-            platform_fee_amount: platformFee,
+            platform_fee: platformFee,
             sitter_amount: sitterAmount,
-            payment_provider: 'iyzico',
-            provider_transaction_id: paymentResult.paymentId,
-            provider_response: paymentResult,
             status: 'completed',
+            paid_at: new Date().toISOString(),
         })
 
         if (dbError) {
