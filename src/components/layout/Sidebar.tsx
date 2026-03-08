@@ -66,7 +66,7 @@ export function Sidebar({ role }: SidebarProps) {
                                 "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                                 isActive
                                     ? activeColor
-                                    : "text-gray-700 hover:bg-gray-100"
+                                    : "text-muted-foreground hover:bg-muted"
                             )}
                         >
                             <Icon className="h-5 w-5" />
