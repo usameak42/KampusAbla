@@ -46,8 +46,8 @@ export function Sidebar({ role }: SidebarProps) {
     ];
 
     const menuItems = role === "parent" ? parentMenuItems : sitterMenuItems;
-    const sidebarColor = role === "parent" ? "bg-blue-50" : "bg-green-50";
-    const activeColor = role === "parent" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700";
+    const sidebarColor = role === "parent" ? "bg-primary/5" : "bg-accent/10";
+    const activeColor = role === "parent" ? "bg-primary/10 text-primary" : "bg-accent/20 text-accent-foreground";
 
     return (
         <div className={cn("w-64 min-h-screen border-r border-gray-200", sidebarColor)}>
