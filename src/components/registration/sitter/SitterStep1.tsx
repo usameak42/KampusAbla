@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, ArrowLeft, Info, CheckCircle2, Mail } from "lucide-react";
 import { SitterFormData } from "@/pages/register/SitterRegistration";
 import { validateEmailAscii } from "@/utils/emailValidator";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 interface SitterStep1Props {
     formData: Partial<SitterFormData>;
