@@ -100,7 +100,7 @@ export function DocumentUpload({
             const sitterId = sitterData.id;
             const fileExt = file.name.split(".").pop();
             const fileName = `${documentType}-${Date.now()}.${fileExt}`;
-            const filePath = `verification-documents/${sitterId}/${documentType}/${fileName}`;
+            const filePath = `${sitterId}/${documentType}/${fileName}`;
 
             // Upload to Supabase Storage
             const { error: uploadError, data } = await supabase.storage
