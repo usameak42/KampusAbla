@@ -108,11 +108,11 @@ export default function ParentDashboard() {
 
             // Fetch sitter names separately
             const sitterIds = [...new Set(bookings.map((b: any) => b.sitter_id).filter(Boolean))];
-            const { data: sittersData }: { data: { id: string; full_name: string }[] | null } = sitterIds.length
+            const { data: sittersData }: { data: { user_id: string; full_name: string }[] | null } = sitterIds.length
                 ? await supabase
                     .from("sitters")
-                    .select("id, full_name")
-                    .in("id", sitterIds)
+                    .select("user_id, full_name")
+                    .in("user_id", sitterIds)
                 : { data: [] };
 
             const sitterMap: Record<string, string> = {};
