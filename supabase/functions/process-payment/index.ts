@@ -88,7 +88,7 @@ serve(async (req) => {
             ...RATE_LIMITS.BOOKING_CREATE
         });
 
-        const rateLimitHeaders = getRateLimitHeaders(rateLimitResult, RATE_LIMITS.BOOKING_CREATE);
+        const rateLimitHeaders = getRateLimitHeaders(rateLimitResult, { identifier: user.id, ...RATE_LIMITS.BOOKING_CREATE });
 
         if (!rateLimitResult.allowed) {
             console.warn(`Rate limit exceeded for user ${user.id}: ${rateLimitResult.currentCount} requests`);
