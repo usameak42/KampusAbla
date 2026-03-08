@@ -66,7 +66,7 @@ export default function SitterDashboard() {
             const { data } = await supabase
                 .from("sitters")
                 .select("verification_status")
-                .eq("id", sitterId)
+                .eq("user_id", sitterId)
                 .single();
             return data?.verification_status ?? null;
         },
