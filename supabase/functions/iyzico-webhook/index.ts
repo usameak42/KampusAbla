@@ -15,11 +15,11 @@ interface WebhookEvent {
  * Verify iyzico webhook signature
  * iyzico sends X-IYZ-Signature header with HMAC-SHA256 signature
  */
-function verifyWebhookSignature(
+async function verifyWebhookSignature(
     payload: string,
     receivedSignature: string | null,
     secretKey: string
-): boolean {
+): Promise<boolean> {
     if (!receivedSignature) {
         console.warn('No signature provided in webhook request');
         return false;
