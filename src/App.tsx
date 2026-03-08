@@ -235,8 +235,7 @@ const App = () => (
                   <Route path="/login" element={<Login />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/unauthorized" element={<NotFound />} />
-                  <Route path="/unauthorized" element={<NotFound />} />
+                   <Route path="/unauthorized" element={<NotFound />} />
 
                   {/* Admin Routes */}
                   <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
