@@ -50,7 +50,7 @@ export function Sidebar({ role }: SidebarProps) {
     const activeColor = role === "parent" ? "bg-primary/10 text-primary" : "bg-accent/20 text-accent-foreground";
 
     return (
-        <div className={cn("w-64 min-h-screen border-r border-gray-200", sidebarColor)}>
+        <div className={cn("w-64 min-h-screen border-r border-border", sidebarColor)}>
             <nav className="pt-20 px-3 space-y-1">
                 {menuItems.map((item) => {
                     const Icon = item.icon;
