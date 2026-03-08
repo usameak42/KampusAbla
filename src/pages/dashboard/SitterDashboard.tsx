@@ -159,7 +159,7 @@ export default function SitterDashboard() {
 
             // Fetch parent names separately
             const parentIds = [...new Set(bookings.map((b: any) => b.parent_id).filter(Boolean))];
-            const { data: parentsData } = parentIds.length
+            const { data: parentsData }: { data: { user_id: string; full_name: string }[] | null } = parentIds.length
                 ? await supabase
                     .from("parents")
                     .select("user_id, full_name")
@@ -177,7 +177,7 @@ export default function SitterDashboard() {
                 .in("booking_id", bookingIds);
 
             const childIds = [...new Set((bookingChildrenData || []).map((bc: any) => bc.child_id).filter(Boolean))];
-            const { data: childrenData } = childIds.length
+            const { data: childrenData }: { data: { id: string; name: string }[] | null } = childIds.length
                 ? await supabase
                     .from("children")
                     .select("id, name")
