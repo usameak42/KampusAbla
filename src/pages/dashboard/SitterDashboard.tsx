@@ -224,10 +224,10 @@ export default function SitterDashboard() {
             // Fetch base need posts without FK joins
             const { data, error } = await supabase
                 .from("need_posts")
-                .select("id, date, start_time, end_time, hourly_rate, parent_id")
+                .select("id, needed_date, start_time, duration_hours, hourly_rate_min, parent_id")
                 .eq("status", "open")
-                .gte("date", today)
-                .order("date", { ascending: true })
+                .gte("needed_date", today)
+                .order("needed_date", { ascending: true })
                 .limit(5);
 
             if (error) throw error;
@@ -271,14 +271,23 @@ export default function SitterDashboard() {
                 if (childMap[pc.child_id]) postChildrenMap[pc.need_post_id].push(childMap[pc.child_id]);
             });
 
-            return posts.map((p: any) => ({
-                id: p.id,
-                childName: (postChildrenMap[p.id] ?? []).join(", ") || "Çocuk",
-                parentName: parentMap[p.parent_id] ?? "Veli",
-                date: format(new Date(p.date), "d MMMM yyyy"),
-                timeRange: `${(p.start_time as string).substring(0, 5)}-${(p.end_time as string).substring(0, 5)}`,
-                hourlyRate: p.hourly_rate,
-            }));
+            return posts.map((p: any) => {
+                const startTime = (p.start_time as string).substring(0, 5);
+                const startHour = parseInt(startTime.substring(0, 2), 10);
+                const startMin = parseInt(startTime.substring(3, 5), 10);
+                const durationMins = Math.round((p.duration_hours ?? 1) * 60);
+                const endTotalMins = startHour * 60 + startMin + durationMins;
+                const endTime = `${String(Math.floor(endTotalMins / 60) % 24).padStart(2, "0")}:${String(endTotalMins % 60).padStart(2, "0")}`;
+
+                return {
+                    id: p.id,
+                    childName: (postChildrenMap[p.id] ?? []).join(", ") || "Çocuk",
+                    parentName: parentMap[p.parent_id] ?? "Veli",
+                    date: format(new Date(p.needed_date), "d MMMM yyyy"),
+                    timeRange: `${startTime}-${endTime}`,
+                    hourlyRate: p.hourly_rate_min,
+                };
+            });
         },
         staleTime: 60_000,
     });

@@ -116,7 +116,7 @@ export default function ParentDashboard() {
                 : { data: [] };
 
             const sitterMap: Record<string, string> = {};
-            (sittersData || []).forEach((s: any) => { sitterMap[s.id] = s.full_name; });
+            (sittersData || []).forEach((s: any) => { sitterMap[s.user_id] = s.full_name; });
 
             // Fetch children for these bookings separately
             const bookingIds = bookings.map((b: any) => b.id);
