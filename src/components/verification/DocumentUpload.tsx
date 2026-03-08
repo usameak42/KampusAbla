@@ -169,11 +169,12 @@ export function DocumentUpload({
 
         try {
             // Extract file path from URL
-            const path = currentFileUrl.split("/verification-documents/")[1];
+            const urlParts = currentFileUrl.split("/verification-documents/");
+            const path = urlParts[urlParts.length - 1];
 
             await supabase.storage
                 .from("verification-documents")
-                .remove([`verification-documents/${path}`]);
+                .remove([path]);
 
             onUploadComplete("");
             toast({ title: "Dosya silindi" });
