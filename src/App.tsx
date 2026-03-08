@@ -204,8 +204,9 @@ const App = () => (
                   {/* Help Routes - public */}
                   <Route path="/help" element={<HelpPage />} />
                   {/* Dispute Routes */}
-                  <Route path="/disputes" element={<PrivateRoute><DisputesPage /></PrivateRoute>} />
-                  <Route path="/disputes/history" element={<PrivateRoute><DisputeHistoryPage /></PrivateRoute>} />
+                   <Route path="/disputes" element={<PrivateRoute><DisputesPage /></PrivateRoute>} />
+                   <Route path="/disputes/new" element={<PrivateRoute><DisputeIntakePage /></PrivateRoute>} />
+                   <Route path="/disputes/history" element={<PrivateRoute><DisputeHistoryPage /></PrivateRoute>} />
                   {/* About Routes - public */}
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/how-it-works" element={<HowItWorksPage />} />

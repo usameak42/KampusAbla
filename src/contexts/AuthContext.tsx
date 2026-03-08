@@ -130,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const isVerified = isUserVerified(user);
     const isEmailVerified = !!user?.email_confirmed_at;
     const isPhoneVerified = !!user?.phone_confirmed_at;
-    const requireDualVerification = true; // Hardcoded for KA-010
+    const requireDualVerification = false; // Disabled until phone verification flow is fully implemented
 
     const value = {
         user,

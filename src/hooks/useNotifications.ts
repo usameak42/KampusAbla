@@ -146,12 +146,12 @@ export function useNotifications({ userId }: UseNotificationsOptions) {
         }
     }, [userId, refetch]);
 
-    // Archive notification (delete since is_archived column doesn't exist)
+    // Archive notification
     const archiveNotification = useCallback(async (notificationId: string) => {
         try {
             const { error } = await supabase
                 .from("notifications")
-                .delete()
+                .update({ is_archived: true })
                 .eq("id", notificationId);
 
             if (error) throw error;
