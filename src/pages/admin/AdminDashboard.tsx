@@ -94,7 +94,7 @@ export default function AdminDashboard() {
                         <Button
                             variant="ghost"
                             className="text-muted-foreground hover:text-foreground"
-                            onClick={() => handleSignOut().then(() => navigate("/admin/login"))}
+                            onClick={() => handleSignOut().then(() => navigate("/mgmt/auth"))}
                         >
                             <LogOut className="mr-2 h-4 w-4" />
                             Çıkış
