@@ -456,6 +456,6 @@ export default function VerificationQueue() {
                     </DialogContent>
                 </Dialog>
             </div>
-        </AppLayout>
-    );
+        </div>
+        );
 }
