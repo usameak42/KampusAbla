@@ -30,13 +30,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/careers" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                  {t("footer.links.careers")}
-                </Link>
-              </li>
-              <li>
-                <Link to="/press" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                  {t("footer.links.press")}
+                <Link to="/how-it-works" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  {t("footer.links.howItWorks", "Nasıl Çalışır")}
                 </Link>
               </li>
             </ul>
