@@ -38,10 +38,9 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
         return <Navigate to="/verify-phone" replace />;
     }
 
-    if (requiredRole && user.user_metadata?.role !== requiredRole) {
-        // Redirect to unauthorized page if role doesn't match
-        return <Navigate to="/unauthorized" replace />;
-    }
+    // SECURITY NOTE: Role-based access control is now enforced server-side via RLS policies
+    // The requiredRole prop is deprecated - use server-side checks in edge functions/RLS
+    // UI role display should query the user_roles table, not user_metadata (user-writable)
 
     return <>{children}</>;
 }

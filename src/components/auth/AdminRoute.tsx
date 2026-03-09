@@ -18,12 +18,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
             setIsAdmin(false);
             return;
         }
-        // Check user_metadata first
-        if (isUserAdmin(user)) {
-            setIsAdmin(true);
-            return;
-        }
-        // Then check user_roles table
+        // SECURITY: Always check user_roles table - NEVER trust user_metadata (user-writable)
         supabase
             .from("user_roles" as any)
             .select("role")
