@@ -57,6 +57,11 @@ export default function FindSitters() {
     const [sortBy, setSortBy] = useState<SortOption>("relevance");
     const [page, setPage] = useState(1);
 
+    // Reset page when filters, sort, or search change
+    useEffect(() => {
+        setPage(1);
+    }, [filters, sortBy, searchQuery]);
+
     // Persist filters to localStorage whenever they change
     useEffect(() => {
         localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(filters));
