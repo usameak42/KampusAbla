@@ -36,7 +36,7 @@ export default function MyFavorites() {
 
     // Filter to show only favorited sitters
     const favoriteSitters = useMemo(() => {
-        return allSitters.filter((sitter) => favorites.includes(sitter.id));
+        return allSitters.filter((sitter: Sitter) => favorites.includes(sitter.id));
     }, [allSitters, favorites]);
 
     const handleViewProfile = (sitterId: string) => {
