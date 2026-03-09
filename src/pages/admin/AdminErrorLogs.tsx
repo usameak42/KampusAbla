@@ -81,7 +81,6 @@ export default function AdminErrorLogs() {
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 pb-12">
             <div className="container mx-auto px-4 py-8 space-y-6">
-            <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <AlertTriangle className="h-6 w-6 text-red-500" />
