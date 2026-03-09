@@ -214,9 +214,9 @@ export default function VerificationQueue() {
         );
     }
 
-    return (
-        <AppLayout>
-            <div className="max-w-6xl mx-auto">
+        return (
+        <div className="min-h-screen bg-slate-950 text-slate-100 pb-12">
+            <div className="container mx-auto px-4 py-8 max-w-6xl">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold mb-2">Doğrulama Kuyruğu</h1>
                     <p className="text-muted-foreground">
