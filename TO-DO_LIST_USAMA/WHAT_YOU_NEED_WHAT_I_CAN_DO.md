@@ -23,7 +23,7 @@
 - ✅ Child data consent in AddChildForm
 - ✅ Location consent component
 - ✅ Improve verification status display (step indicators, doc checklist, themed colors)
-- 🔨 Add document preview in upload forms
+- ✅ Add document preview in upload forms (inline image zoom/rotate, PDF iframe preview)
 
 ### Authentication
 - ✅ Email/password authentication

@@ -1,5 +1,5 @@
 /**
- * Document Upload Component - Drag-and-drop file upload for verification documents
+ * Document Upload Component - Drag-and-drop file upload with inline preview for verification documents
  */
 
 import { useState, useRef } from "react";
@@ -15,9 +15,14 @@ import {
     CheckCircle2,
     AlertCircle,
     Loader2,
-    Eye
+    Eye,
+    FileText,
+    ZoomIn,
+    ZoomOut,
+    RotateCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LazyImage } from "@/components/ui/lazy-image";
 
 type DocumentType = "student-id" | "government-id" | "selfie" | "background-check" | "transcript" | "student-certificate";
 
@@ -48,21 +53,19 @@ export function DocumentUpload({
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
+    const [showPreview, setShowPreview] = useState(false);
+    const [imageZoom, setImageZoom] = useState(1);
+    const [imageRotation, setImageRotation] = useState(0);
 
     const isImage = documentType !== "background-check" && documentType !== "transcript" && documentType !== "student-certificate";
     const isPdf = documentType === "background-check" || documentType === "transcript" || documentType === "student-certificate";
 
     const validateFile = (file: File): boolean => {
-        // Check file size
         const maxBytes = maxSize * 1024 * 1024;
         if (file.size > maxBytes) {
             setError(`Dosya boyutu ${maxSize}MB'dan küçük olmalıdır`);
             return false;
         }
-
-        // Check file type
-        // const isImage ... (already defined above)
-        // const isPdf ... (already defined above)
 
         if (isImage && !file.type.startsWith("image/")) {
             setError("Lütfen geçerli bir resim dosyası yükleyin");
@@ -88,7 +91,6 @@ export function DocumentUpload({
             const user = (await supabase.auth.getUser()).data.user;
             if (!user) throw new Error("Not authenticated");
 
-            // Get sitter ID from user metadata or sitters table
             const { data: sitterData } = await supabase
                 .from("sitters")
                 .select("id")
@@ -102,8 +104,7 @@ export function DocumentUpload({
             const fileName = `${documentType}-${Date.now()}.${fileExt}`;
             const filePath = `${sitterId}/${documentType}/${fileName}`;
 
-            // Upload to Supabase Storage
-            const { error: uploadError, data } = await supabase.storage
+            const { error: uploadError } = await supabase.storage
                 .from("verification-documents")
                 .upload(filePath, file, {
                     cacheControl: "3600",
@@ -112,12 +113,10 @@ export function DocumentUpload({
 
             if (uploadError) throw uploadError;
 
-            // Get public URL
             const { data: { publicUrl } } = supabase.storage
                 .from("verification-documents")
                 .getPublicUrl(filePath);
 
-            // Update sitter_verifications table
             const columnName = `${documentType.replace("-", "_")}_url`;
             await supabase
                 .from("sitter_verifications")
@@ -129,6 +128,7 @@ export function DocumentUpload({
                 });
 
             setUploadProgress(100);
+            setShowPreview(true);
             toast({
                 title: "Yükleme başarılı",
                 description: `${title} başarıyla yüklendi`,
@@ -150,40 +150,106 @@ export function DocumentUpload({
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
-
         const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            uploadFile(files[0]);
-        }
+        if (files.length > 0) uploadFile(files[0]);
     };
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
-        if (files && files.length > 0) {
-            uploadFile(files[0]);
-        }
+        if (files && files.length > 0) uploadFile(files[0]);
     };
 
     const handleDelete = async () => {
         if (!currentFileUrl) return;
-
         try {
-            // Extract file path from URL
             const urlParts = currentFileUrl.split("/verification-documents/");
             const path = urlParts[urlParts.length - 1];
-
-            await supabase.storage
-                .from("verification-documents")
-                .remove([path]);
-
+            await supabase.storage.from("verification-documents").remove([path]);
+            setShowPreview(false);
+            setImageZoom(1);
+            setImageRotation(0);
             onUploadComplete("");
             toast({ title: "Dosya silindi" });
-        } catch (err) {
-            toast({
-                title: "Silme başarısız",
-                variant: "destructive",
-            });
+        } catch {
+            toast({ title: "Silme başarısız", variant: "destructive" });
         }
+    };
+
+    const renderPreview = () => {
+        if (!currentFileUrl) return null;
+
+        if (isImage) {
+            return (
+                <div className="space-y-3">
+                    {/* Image preview with zoom/rotate controls */}
+                    <div className="relative overflow-hidden rounded-lg border border-border bg-muted/30">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/50">
+                            <span className="text-xs font-medium text-muted-foreground">Önizleme</span>
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() => setImageZoom((z) => Math.max(0.5, z - 0.25))}
+                                >
+                                    <ZoomOut className="h-3.5 w-3.5" />
+                                </Button>
+                                <span className="text-xs text-muted-foreground w-10 text-center">
+                                    {Math.round(imageZoom * 100)}%
+                                </span>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() => setImageZoom((z) => Math.min(3, z + 0.25))}
+                                >
+                                    <ZoomIn className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() => setImageRotation((r) => (r + 90) % 360)}
+                                >
+                                    <RotateCw className="h-3.5 w-3.5" />
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-center p-4 min-h-[200px] max-h-[320px] overflow-auto">
+                            <img
+                                src={currentFileUrl}
+                                alt={title}
+                                className="max-w-full transition-transform duration-200 rounded"
+                                style={{
+                                    transform: `scale(${imageZoom}) rotate(${imageRotation}deg)`,
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        if (isPdf) {
+            return (
+                <div className="space-y-3">
+                    <div className="relative overflow-hidden rounded-lg border border-border bg-muted/30">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/50">
+                            <span className="text-xs font-medium text-muted-foreground">PDF Önizleme</span>
+                        </div>
+                        <div className="h-[300px]">
+                            <iframe
+                                src={`${currentFileUrl}#toolbar=0&navpanes=0`}
+                                className="w-full h-full border-0"
+                                title={`${title} önizleme`}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return null;
     };
 
     return (
@@ -206,38 +272,52 @@ export function DocumentUpload({
                     )}
 
                     {currentFileUrl ? (
-                        <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
-                            <div className="flex items-center gap-3">
-                                <CheckCircle2 className="h-5 w-5 text-green-600" />
-                                <div>
-                                    <p className="font-medium text-green-900">Dosya Yüklendi</p>
-                                    <p className="text-sm text-green-700">Doküman başarıyla yüklendi</p>
+                        <div className="space-y-3">
+                            {/* Status bar */}
+                            <div className="flex items-center justify-between p-3 bg-success/10 border border-success/30 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                    <CheckCircle2 className="h-5 w-5 text-success" />
+                                    <div>
+                                        <p className="font-medium text-sm">Dosya Yüklendi</p>
+                                        <p className="text-xs text-muted-foreground">Doküman başarıyla yüklendi</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setShowPreview(!showPreview)}
+                                    >
+                                        <Eye className="h-4 w-4 mr-1.5" />
+                                        {showPreview ? "Gizle" : "Önizle"}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => window.open(currentFileUrl, "_blank")}
+                                    >
+                                        {isPdf ? <FileText className="h-4 w-4" /> : <ZoomIn className="h-4 w-4" />}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleDelete}
+                                        disabled={disabled}
+                                        className="text-destructive hover:text-destructive"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
                                 </div>
                             </div>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => window.open(currentFileUrl, "_blank")}
-                                >
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    Görüntüle
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleDelete}
-                                    disabled={disabled}
-                                >
-                                    <X className="h-4 w-4" />
-                                </Button>
-                            </div>
+
+                            {/* Inline preview */}
+                            {showPreview && renderPreview()}
                         </div>
                     ) : (
                         <div
                             className={cn(
                                 "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
-                                isDragging ? "border-primary bg-primary/5" : "border-gray-300",
+                                isDragging ? "border-primary bg-primary/5" : "border-border",
                                 disabled && "opacity-50 cursor-not-allowed"
                             )}
                             onDrop={handleDrop}
@@ -265,7 +345,7 @@ export function DocumentUpload({
                                 </div>
                             ) : (
                                 <>
-                                    <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                                    <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                                     <p className="font-medium mb-2">
                                         Dosyayı sürükleyip bırakın veya seçin
                                     </p>
