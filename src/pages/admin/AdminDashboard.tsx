@@ -70,7 +70,7 @@ export default function AdminDashboard() {
     const { quickActions, allActions, quickActionIds, toggleAction } = useAdminQuickActions();
 
     return (
-        <div className="min-h-screen bg-background text-foreground pb-12">
+        <div className="admin-theme min-h-screen bg-background text-foreground pb-12">
             {/* Header */}
             <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-10">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
