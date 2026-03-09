@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { SitterCard } from "@/components/search/SitterCard";
 import { SearchFilters, SearchFiltersType } from "@/components/search/SearchFilters";
 import { SortDropdown, SortOption } from "@/components/search/SortDropdown";
-import { useSearchSitters } from "@/hooks/useSearchSitters";
+import { useSearchSitters, Sitter } from "@/hooks/useSearchSitters";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Search, Grid3x3, Map, SlidersHorizontal, X, Heart } from "lucide-react";
