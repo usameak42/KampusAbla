@@ -156,7 +156,41 @@ export function useSession(options: UseSessionOptions = {}) {
 
             if (updateError) throw updateError;
 
-            // 2. Refresh
+            // 2. Notify the other party about the status change (best-effort, don't block status update)
+            const statusLabels: Partial<Record<SessionStatus, string>> = {
+                on_way: "Bakıcı yola çıktı",
+                arrived: "Bakıcı evinize ulaştı",
+                picked_up: "Çocuk teslim alındı",
+                in_progress: "Seans başladı",
+                completed: "Seans tamamlandı",
+            };
+
+            const label = statusLabels[newStatus];
+            if (label) {
+                const userRole = user.user_metadata?.role;
+                // Notify parent when sitter updates status; notify sitter when parent confirms
+                const recipientId = userRole === "sitter" ? session.parentId : session.sitterId;
+                const actionUrl = `/sessions/${sessionId}`;
+
+                supabase.from("notifications").insert({
+                    user_id: recipientId,
+                    type: "session_status",
+                    title: label,
+                    message: label,
+                    related_id: sessionId,
+                    related_type: "session",
+                    action_url: actionUrl,
+                    action_label: "Seansı Görüntüle",
+                    is_read: false,
+                    is_archived: false,
+                }).then(({ error: notifError }) => {
+                    if (notifError) {
+                        console.error("Failed to create session status notification:", notifError);
+                    }
+                });
+            }
+
+            // 3. Refresh
             await fetchSession();
 
         } catch (err: any) {

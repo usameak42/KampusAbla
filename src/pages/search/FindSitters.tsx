@@ -2,7 +2,7 @@
  * Find Sitters Page - Main search interface for parents (UPDATED with useFavorites)
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { SearchFilters, SearchFiltersType } from "@/components/search/SearchFilt
 import { SortDropdown, SortOption } from "@/components/search/SortDropdown";
 import { useSearchSitters } from "@/hooks/useSearchSitters";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Search, Grid3x3, Map, SlidersHorizontal, X, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -36,18 +37,39 @@ const DEFAULT_FILTERS: SearchFiltersType = {
     availableNow: false,
 };
 
+const FILTERS_STORAGE_KEY = "kampusabla_search_filters";
+
+function loadFiltersFromStorage(): SearchFiltersType {
+    try {
+        const raw = localStorage.getItem(FILTERS_STORAGE_KEY);
+        if (raw) return { ...DEFAULT_FILTERS, ...JSON.parse(raw) };
+    } catch {
+        // ignore parse errors
+    }
+    return DEFAULT_FILTERS;
+}
+
 export default function FindSitters() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
     const [view, setView] = useState<"grid" | "map">("grid");
-    const [filters, setFilters] = useState<SearchFiltersType>(DEFAULT_FILTERS);
+    const [filters, setFilters] = useState<SearchFiltersType>(loadFiltersFromStorage);
     const [sortBy, setSortBy] = useState<SortOption>("relevance");
     const [page, setPage] = useState(1);
 
+    // Persist filters to localStorage whenever they change
+    useEffect(() => {
+        localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(filters));
+    }, [filters]);
+
+    // Debounce filter changes (500 ms) before passing to search hook
+    const debouncedFilters = useDebounce(filters, 500);
+    const debouncedQuery = useDebounce(searchQuery, 500);
+
     const { sitters, totalCount, hasMore, isLoading } = useSearchSitters({
-        filters,
+        filters: debouncedFilters,
         sortBy,
-        searchQuery,
+        searchQuery: debouncedQuery,
         page,
         pageSize: 20,
     });
@@ -62,6 +84,7 @@ export default function FindSitters() {
         setFilters(DEFAULT_FILTERS);
         setSearchQuery("");
         setSortBy("relevance");
+        localStorage.removeItem(FILTERS_STORAGE_KEY);
     };
 
     const handleLoadMore = () => {

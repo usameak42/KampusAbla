@@ -15,6 +15,7 @@ import { Loader2, ArrowLeft, Info, CheckCircle2, Mail } from "lucide-react";
 import { SitterFormData } from "@/pages/register/SitterRegistration";
 import { validateEmailAscii } from "@/utils/emailValidator";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SitterStep1Props {
     formData: Partial<SitterFormData>;
@@ -34,6 +35,7 @@ export function SitterStep1({ formData, updateFormData, onNext, onBack }: Sitter
     const [phone, setPhone] = useState(formData.phone || "");
     const [universityEmail, setUniversityEmail] = useState(formData.universityEmail || "");
     const [kvkkAccepted, setKvkkAccepted] = useState(false);
+    const [locationConsentAccepted, setLocationConsentAccepted] = useState(false);
 
     // Verification state
     const [emailVerificationSent, setEmailVerificationSent] = useState(false);
@@ -86,7 +88,20 @@ export function SitterStep1({ formData, updateFormData, onNext, onBack }: Sitter
         }
 
         try {
-            await handleSignUp(email, password, { role: "sitter", full_name: fullName, phone, university_email: universityEmail });
+            const signUpData = await handleSignUp(email, password, { role: "sitter", full_name: fullName, phone, university_email: universityEmail });
+
+            // Log KVKK consents for the newly created user
+            const userId = signUpData?.user?.id;
+            if (userId) {
+                const consentInserts = [
+                    { user_id: userId, consent_type: "data_processing", granted: true },
+                    { user_id: userId, consent_type: "location_tracking", granted: locationConsentAccepted },
+                ];
+                const { error: consentError } = await supabase.from("kvkk_consents").upsert(consentInserts);
+                if (consentError) {
+                    console.error("KVKK consent logging failed:", consentError);
+                }
+            }
 
             // Auto-confirm enabled — session available immediately, skip SMS
             updateFormData({ phone, email, password, fullName, universityEmail });
@@ -328,7 +343,19 @@ export function SitterStep1({ formData, updateFormData, onNext, onBack }: Sitter
                     </Label>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading || !kvkkAccepted}>
+                <div className="flex items-start space-x-2 py-2">
+                    <Checkbox
+                        id="locationConsent"
+                        checked={locationConsentAccepted}
+                        onCheckedChange={(checked) => setLocationConsentAccepted(checked === true)}
+                        className="mt-1"
+                    />
+                    <Label htmlFor="locationConsent" className="text-xs leading-normal cursor-pointer">
+                        Aktif seans sırasında konumumun ebeveyne canlı olarak paylaşılmasına onay veriyorum. *
+                    </Label>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={isLoading || !kvkkAccepted || !locationConsentAccepted}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Kayıt Ol ve Devam Et
                 </Button>

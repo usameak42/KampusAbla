@@ -11,6 +11,23 @@ export class LocationTrackingService {
     private sessionId: string | null = null;
     private trackingInterval: NodeJS.Timeout | null = null;
     private readonly TRACKING_INTERVAL_MS = 30000; // 30 seconds
+    private readonly MAX_RETRY_ATTEMPTS = 3;
+
+    /**
+     * Record location with exponential backoff retry
+     */
+    private async recordLocationWithRetry(
+        getLocationFn: () => Promise<LocationCoord | null>,
+        attempt = 1
+    ): Promise<boolean> {
+        const success = await this.recordLocation(getLocationFn);
+        if (success) return true;
+        if (attempt >= this.MAX_RETRY_ATTEMPTS) return false;
+
+        const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return this.recordLocationWithRetry(getLocationFn, attempt + 1);
+    }
 
     /**
      * Start tracking location for a session
@@ -28,16 +45,16 @@ export class LocationTrackingService {
 
         this.sessionId = sessionId;
 
-        // Record initial location immediately
-        const success = await this.recordLocation(getLocationFn);
+        // Record initial location immediately (with retry)
+        const success = await this.recordLocationWithRetry(getLocationFn);
         if (!success) {
-            console.error('Failed to record initial location');
+            console.error('Failed to record initial location after retries');
             return false;
         }
 
-        // Set up periodic location recording
+        // Set up periodic location recording (with retry per interval)
         this.trackingInterval = setInterval(async () => {
-            await this.recordLocation(getLocationFn);
+            await this.recordLocationWithRetry(getLocationFn);
         }, this.TRACKING_INTERVAL_MS);
 
         logger.info(`Location tracking started for session: ${sessionId}`, { action: 'location.tracking.start', sessionId });
