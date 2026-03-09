@@ -22,13 +22,7 @@ export default function AdminLogin() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session?.user) return;
 
-            const role = session.user.user_metadata?.role;
-            if (role === "admin") {
-                navigate("/admin/dashboard", { replace: true });
-                return;
-            }
-
-            // Check user_roles table
+            // SECURITY: Only check user_roles table (user_metadata is user-writable)
             const { data: roleData } = await supabase
                 .from("user_roles" as any)
                 .select("role")
@@ -59,15 +53,8 @@ export default function AdminLogin() {
         try {
             const result: any = await handleSignIn(email, password);
             const user = result?.data?.user || result?.user;
-            const role = user?.user_metadata?.role;
 
-            // Check user_metadata first
-            if (role === "admin") {
-                navigate("/admin/dashboard");
-                return;
-            }
-
-            // Check user_roles table
+            // SECURITY: Only check user_roles table (user_metadata is user-writable)
             if (user?.id) {
                 const { data: roleData } = await supabase
                     .from("user_roles" as any)
