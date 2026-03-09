@@ -3,7 +3,6 @@
  */
 
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -208,17 +207,15 @@ export default function VerificationQueue() {
 
     if (isLoading) {
         return (
-            <AppLayout>
-                <div className="flex justify-center items-center min-h-[400px]">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-            </AppLayout>
+            <div className="min-h-screen bg-slate-950 text-slate-100 flex justify-center items-center">
+                <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+            </div>
         );
     }
 
-    return (
-        <AppLayout>
-            <div className="max-w-6xl mx-auto">
+        return (
+        <div className="min-h-screen bg-slate-950 text-slate-100 pb-12">
+            <div className="container mx-auto px-4 py-8 max-w-6xl">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold mb-2">Doğrulama Kuyruğu</h1>
                     <p className="text-muted-foreground">
@@ -458,6 +455,6 @@ export default function VerificationQueue() {
                     </DialogContent>
                 </Dialog>
             </div>
-        </AppLayout>
-    );
+        </div>
+        );
 }

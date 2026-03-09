@@ -127,8 +127,8 @@ export function GlobalErrorFallback({ error, resetError }: GlobalErrorFallbackPr
                         </Button>
 
                         <Button variant="outline" onClick={handleReport}>
-                            <Mail className="h-4 w-4 mr-2" />
-                            Sorun Bildir
+                            <AlertTriangle className="h-4 w-4 mr-2" />
+                            Geliştiricilere Gönder
                         </Button>
                     </div>
                 </CardFooter>
