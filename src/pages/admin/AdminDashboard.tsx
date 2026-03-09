@@ -17,47 +17,40 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useAuthentication } from "@/hooks/useAuthentication";
-import { useAdminQuickActions, ALL_ADMIN_ACTIONS } from "@/hooks/useAdminQuickActions";
+import { useAdminQuickActions } from "@/hooks/useAdminQuickActions";
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
     const { handleSignOut } = useAuthentication();
 
     const [stats, setStats] = useState([
-        { label: "Toplam Kullanıcı", value: "-", icon: Users, color: "text-blue-500" },
-        { label: "Onay Bekleyenler", value: "-", icon: ShieldCheck, color: "text-amber-500" },
-        { label: "Aktif Seanslar", value: "-", icon: BarChart3, color: "text-emerald-500" },
-        { label: "Açık Raporlar", value: "0", icon: AlertTriangle, color: "text-rose-500" },
+        { label: "Toplam Kullanıcı", value: "-", icon: Users, color: "text-trust" },
+        { label: "Onay Bekleyenler", value: "-", icon: ShieldCheck, color: "text-warning" },
+        { label: "Aktif Seanslar", value: "-", icon: BarChart3, color: "text-success" },
+        { label: "Açık Raporlar", value: "0", icon: AlertTriangle, color: "text-destructive" },
     ]);
 
     useEffect(() => {
         const fetchStats = async () => {
-            // Count total users (parents + sitters)
             const { count: parentCount } = await supabase
                 .from("parents")
                 .select("*", { count: "exact", head: true });
-
             const { count: sitterCount } = await supabase
                 .from("sitters")
                 .select("*", { count: "exact", head: true });
-
             const userCount = (parentCount || 0) + (sitterCount || 0);
 
-            // Count Pending Verifications
             const { count: pendingCount } = await supabase
                 .from("sitter_verifications")
                 .select("*", { count: "exact", head: true })
                 .eq("verification_status", "pending");
 
-            // Count Active Sessions
             const { count: activeSessionsCount } = await supabase
                 .from("sessions")
                 .select("*", { count: "exact", head: true })
                 .eq("status", "in-progress");
 
-            // Count Open Reports
             const { count: reportCount } = await supabase
                 .from("reports")
                 .select("*", { count: "exact", head: true })
@@ -65,45 +58,46 @@ export default function AdminDashboard() {
                 .neq("status", "dismissed");
 
             setStats([
-                { label: "Toplam Kullanıcı", value: userCount.toString(), icon: Users, color: "text-blue-500" },
-                { label: "Onay Bekleyenler", value: pendingCount?.toString() || "0", icon: ShieldCheck, color: "text-amber-500" },
-                { label: "Aktif Seanslar", value: activeSessionsCount?.toString() || "0", icon: BarChart3, color: "text-emerald-500" },
-                { label: "Açık Raporlar", value: reportCount?.toString() || "0", icon: AlertTriangle, color: "text-rose-500" },
+                { label: "Toplam Kullanıcı", value: userCount.toString(), icon: Users, color: "text-trust" },
+                { label: "Onay Bekleyenler", value: pendingCount?.toString() || "0", icon: ShieldCheck, color: "text-warning" },
+                { label: "Aktif Seanslar", value: activeSessionsCount?.toString() || "0", icon: BarChart3, color: "text-success" },
+                { label: "Açık Raporlar", value: reportCount?.toString() || "0", icon: AlertTriangle, color: "text-destructive" },
             ]);
         };
-
         fetchStats();
     }, []);
 
     const { quickActions, allActions, quickActionIds, toggleAction } = useAdminQuickActions();
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 pb-12">
+        <div className="min-h-screen bg-background text-foreground pb-12">
             {/* Header */}
-            <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
+            <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-10">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="bg-purple-600 p-1.5 rounded-lg">
-                            <ShieldCheck className="h-6 w-6 text-white" />
+                        <div className="bg-primary p-1.5 rounded-lg">
+                            <ShieldCheck className="h-6 w-6 text-primary-foreground" />
                         </div>
-                        <h1 className="text-xl font-bold tracking-tight">KampusAbla <span className="text-purple-400">Admin</span></h1>
+                        <h1 className="text-xl font-bold tracking-tight">
+                            KampusAbla <span className="text-primary">Admin</span>
+                        </h1>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                             <Bell className="h-5 w-5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                             <MessageSquare className="h-5 w-5" />
                         </Button>
-                        <div className="h-8 w-px bg-slate-800 mx-1"></div>
+                        <div className="h-8 w-px bg-border mx-1" />
                         <Button
                             variant="ghost"
-                            className="text-slate-400 hover:text-white hover:bg-slate-800"
+                            className="text-muted-foreground hover:text-foreground"
                             onClick={() => handleSignOut().then(() => navigate("/admin/login"))}
                         >
                             <LogOut className="mr-2 h-4 w-4" />
-                            Sign Out
+                            Çıkış
                         </Button>
                     </div>
                 </div>
@@ -111,38 +105,38 @@ export default function AdminDashboard() {
 
             <main className="container mx-auto px-4 py-8">
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                     {stats.map((stat) => (
-                        <Card key={stat.label} className="bg-slate-900 border-slate-800 shadow-xl overflow-hidden group hover:border-purple-500/50 transition-all">
-                            <CardContent className="p-6">
+                        <Card key={stat.label} className="group hover:shadow-md transition-all">
+                            <CardContent className="p-5">
                                 <div className="flex items-center justify-between mb-2">
-                                    <p className="text-sm font-medium text-slate-400">{stat.label}</p>
-                                    <div className={`p-2 rounded-lg bg-slate-800 group-hover:bg-slate-700 transition-colors`}>
+                                    <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                                    <div className="p-2 rounded-lg bg-muted group-hover:bg-accent transition-colors">
                                         <stat.icon className={`h-5 w-5 ${stat.color}`} />
                                     </div>
                                 </div>
                                 <h3 className="text-2xl font-bold">{stat.value}</h3>
-                                <div className="mt-2 flex items-center text-xs text-emerald-400">
+                                <div className="mt-2 flex items-center text-xs text-success">
                                     <CheckCircle2 className="h-3 w-3 mr-1" />
-                                    <span>+12% from last week</span>
+                                    <span>+12% geçen haftaya göre</span>
                                 </div>
                             </CardContent>
                         </Card>
                     ))}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     {/* Quick Actions */}
-                    <Card className="lg:col-span-1 bg-slate-900 border-slate-800 shadow-xl">
+                    <Card className="lg:col-span-1">
                         <CardHeader>
                             <CardTitle className="text-lg font-bold flex items-center gap-2">
-                                <Star className="h-4 w-4 text-amber-400" />
+                                <Star className="h-4 w-4 text-warning" />
                                 Hızlı Erişim
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             {quickActions.length === 0 && (
-                                <p className="text-sm text-slate-500 text-center py-4">
+                                <p className="text-sm text-muted-foreground text-center py-4">
                                     Aşağıdaki listeden hızlı erişime ekleyin.
                                 </p>
                             )}
@@ -150,34 +144,34 @@ export default function AdminDashboard() {
                                 <Button
                                     key={action.id}
                                     variant="outline"
-                                    className="w-full justify-start border-slate-700 bg-slate-800/50 hover:bg-slate-800 hover:border-purple-500/50 text-slate-200 transition-all"
+                                    className="w-full justify-start hover:bg-accent transition-all"
                                     onClick={() => navigate(action.path)}
                                 >
-                                    <action.icon className="mr-3 h-4 w-4 text-purple-400" />
+                                    <action.icon className="mr-3 h-4 w-4 text-primary" />
                                     {action.label}
                                 </Button>
                             ))}
                         </CardContent>
                     </Card>
 
-                    {/* Recent Activity Placeholder */}
-                    <Card className="lg:col-span-2 bg-slate-900 border-slate-800 shadow-xl">
+                    {/* Recent Activity */}
+                    <Card className="lg:col-span-2">
                         <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="text-lg font-bold">Recent Activity</CardTitle>
-                            <Button variant="link" className="text-purple-400 p-0 h-auto">View all</Button>
+                            <CardTitle className="text-lg font-bold">Son Aktiviteler</CardTitle>
+                            <Button variant="link" className="text-primary p-0 h-auto">Tümünü gör</Button>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 {[1, 2, 3, 4, 5].map((_, i) => (
-                                    <div key={i} className="flex items-start gap-4 p-3 rounded-lg hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-700">
-                                        <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center shrink-0">
-                                            <Users className="h-4 w-4 text-blue-400" />
+                                    <div key={i} className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors border border-transparent hover:border-border">
+                                        <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center shrink-0">
+                                            <Users className="h-4 w-4 text-accent-foreground" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium">New user registered</p>
-                                            <p className="text-xs text-slate-500 truncate">Zeynep Yılmaz joined as a Sitter</p>
+                                            <p className="text-sm font-medium">Yeni kullanıcı kaydoldu</p>
+                                            <p className="text-xs text-muted-foreground truncate">Zeynep Yılmaz — Bakıcı olarak katıldı</p>
                                         </div>
-                                        <span className="text-[10px] text-slate-600 font-mono">2m ago</span>
+                                        <span className="text-[10px] text-muted-foreground font-mono">2dk önce</span>
                                     </div>
                                 ))}
                             </div>
@@ -186,10 +180,10 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* All Actions */}
-                <Card className="bg-slate-900 border-slate-800 shadow-xl">
+                <Card>
                     <CardHeader>
                         <CardTitle className="text-lg font-bold flex items-center gap-2">
-                            <Grid3X3 className="h-4 w-4 text-slate-400" />
+                            <Grid3X3 className="h-4 w-4 text-muted-foreground" />
                             Tüm İşlemler
                         </CardTitle>
                     </CardHeader>
@@ -200,20 +194,20 @@ export default function AdminDashboard() {
                                 return (
                                     <div
                                         key={action.id}
-                                        className="flex items-center gap-3 p-3 rounded-lg border border-slate-700 bg-slate-800/30 hover:bg-slate-800 hover:border-purple-500/30 transition-all group cursor-pointer"
+                                        className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:bg-accent/30 hover:border-primary/20 transition-all group cursor-pointer"
                                         onClick={() => navigate(action.path)}
                                     >
-                                        <div className="p-2 rounded-lg bg-slate-700/50 group-hover:bg-slate-700 transition-colors">
-                                            <action.icon className="h-4 w-4 text-purple-400" />
+                                        <div className="p-2 rounded-lg bg-muted group-hover:bg-accent transition-colors">
+                                            <action.icon className="h-4 w-4 text-primary" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-slate-200">{action.label}</p>
-                                            <p className="text-xs text-slate-500 truncate">{action.description}</p>
+                                            <p className="text-sm font-medium">{action.label}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{action.description}</p>
                                         </div>
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-7 w-7 shrink-0 text-slate-500 hover:text-amber-400"
+                                            className="h-7 w-7 shrink-0 text-muted-foreground hover:text-warning"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 toggleAction(action.id);
@@ -221,7 +215,7 @@ export default function AdminDashboard() {
                                             title={isPinned ? "Hızlı erişimden kaldır" : "Hızlı erişime ekle"}
                                         >
                                             {isPinned ? (
-                                                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                                                <Star className="h-4 w-4 fill-current text-warning" />
                                             ) : (
                                                 <StarOff className="h-4 w-4" />
                                             )}
