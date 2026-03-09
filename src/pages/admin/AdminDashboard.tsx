@@ -10,11 +10,16 @@ import {
     Bell,
     MessageSquare,
     AlertTriangle,
-    CheckCircle2
+    CheckCircle2,
+    Grid3X3,
+    Star,
+    StarOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useAuthentication } from "@/hooks/useAuthentication";
+import { useAdminQuickActions, ALL_ADMIN_ACTIONS } from "@/hooks/useAdminQuickActions";
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
