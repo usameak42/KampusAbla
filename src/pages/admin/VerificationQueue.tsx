@@ -208,11 +208,9 @@ export default function VerificationQueue() {
 
     if (isLoading) {
         return (
-            <AppLayout>
-                <div className="flex justify-center items-center min-h-[400px]">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-            </AppLayout>
+            <div className="min-h-screen bg-slate-950 text-slate-100 flex justify-center items-center">
+                <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+            </div>
         );
     }
 
