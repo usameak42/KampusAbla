@@ -52,8 +52,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                  {t("footer.links.contact")}
+                <Link to="/kvkk" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  KVKK
                 </Link>
               </li>
             </ul>

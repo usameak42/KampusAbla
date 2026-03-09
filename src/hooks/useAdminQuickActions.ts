@@ -15,12 +15,12 @@ export interface AdminAction {
 }
 
 export const ALL_ADMIN_ACTIONS: AdminAction[] = [
-  { id: "users", label: "Kullanıcı Yönetimi", icon: Users, path: "/admin/users", description: "Kullanıcıları görüntüle ve yönet" },
-  { id: "verifications", label: "Onay Kuyruğu", icon: ShieldCheck, path: "/admin/verifications", description: "Bakıcı doğrulama başvurularını incele" },
-  { id: "reports", label: "Rapor Yönetimi", icon: AlertTriangle, path: "/admin/reports", description: "Kullanıcı raporlarını incele" },
-  { id: "monitoring", label: "Sistem İzleme", icon: BarChart3, path: "/admin/monitoring", description: "Analitik ve performans verileri" },
-  { id: "settings", label: "Sistem Ayarları", icon: Settings, path: "/admin/settings", description: "Platform yapılandırması" },
-  { id: "error-logs", label: "Hata Logları", icon: FileWarning, path: "/admin/error-logs", description: "Kullanıcı hata raporlarını görüntüle" },
+  { id: "users", label: "Kullanıcı Yönetimi", icon: Users, path: "/mgmt/panel/users", description: "Kullanıcıları görüntüle ve yönet" },
+  { id: "verifications", label: "Onay Kuyruğu", icon: ShieldCheck, path: "/mgmt/panel/verifications", description: "Bakıcı doğrulama başvurularını incele" },
+  { id: "reports", label: "Rapor Yönetimi", icon: AlertTriangle, path: "/mgmt/panel/reports", description: "Kullanıcı raporlarını incele" },
+  { id: "monitoring", label: "Sistem İzleme", icon: BarChart3, path: "/mgmt/panel/monitoring", description: "Analitik ve performans verileri" },
+  { id: "settings", label: "Sistem Ayarları", icon: Settings, path: "/mgmt/panel/settings", description: "Platform yapılandırması" },
+  { id: "error-logs", label: "Hata Logları", icon: FileWarning, path: "/mgmt/panel/error-logs", description: "Kullanıcı hata raporlarını görüntüle" },
 ];
 
 const DEFAULT_QUICK_ACTION_IDS = ["users", "verifications", "reports", "error-logs"];
