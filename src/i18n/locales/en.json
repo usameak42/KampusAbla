@@ -21,7 +21,11 @@
     "none": "None",
     "viewMore": "View more",
     "seeAll": "See all",
-    "close": "Close"
+    "close": "Close",
+    "required": "Required",
+    "optional": "Optional",
+    "success": "Success",
+    "pleaseWait": "Please wait..."
   },
   "nav": {
     "home": "Home",
@@ -56,7 +60,8 @@
         "description": "3rd year+ university students vetted with ID, student verification, and background checks"
       },
       "location": {
-        "title": "Live Location Tracking"
+        "title": "Live Location Tracking",
+        "description": "Real-time location sharing during pickup for complete peace of mind"
       },
       "chat": {
         "title": "Secure Communication",
@@ -117,11 +122,14 @@
       "title": "Welcome Back",
       "subtitle": "Log in to your account",
       "email": "Email",
+      "emailPlaceholder": "example@email.com",
       "password": "Password",
       "forgotPassword": "Forgot Password",
       "noAccount": "Don't have an account?",
       "createAccount": "Create Account",
-      "button": "Log In"
+      "button": "Log In",
+      "loggingIn": "Logging in...",
+      "rememberMe": "Remember Me"
     },
     "signup": {
       "title": "Create Account",
@@ -153,6 +161,174 @@
       "button": "Send Reset Link",
       "backToLogin": "Back to Login",
       "success": "Reset link sent to your email"
+    },
+    "admin": {
+      "title": "Admin Login",
+      "subtitle": "Enter your credentials to access the admin panel",
+      "backToSite": "Back to Site",
+      "unauthorized": "Unauthorized Access",
+      "noPermission": "You don't have admin permissions to access this section.",
+      "tooManyAttempts": "Too many failed attempts",
+      "tryAgainIn": "Please try again in {{time}}.",
+      "copyright": "© {{year}} KampusAbla. All rights reserved."
+    }
+  },
+  "bookings": {
+    "title": "My Bookings",
+    "empty": "You don't have any bookings yet.",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "view": "View",
+      "reschedule": "Reschedule"
+    },
+    "details": {
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "location": "Location",
+      "children": "Children",
+      "notes": "Notes",
+      "totalAmount": "Total Amount"
+    },
+    "create": {
+      "title": "New Booking",
+      "selectSitter": "Select a Sitter",
+      "selectChildren": "Select Children",
+      "selectDate": "Select Date",
+      "selectTime": "Select Time",
+      "addNotes": "Add Notes",
+      "confirm": "Confirm Booking"
+    }
+  },
+  "children": {
+    "title": "My Children",
+    "empty": "You haven't added any children yet.",
+    "add": "Add Child",
+    "edit": "Edit",
+    "delete": "Delete",
+    "form": {
+      "name": "Name",
+      "birthDate": "Birth Date",
+      "gender": "Gender",
+      "allergies": "Allergies",
+      "specialNeeds": "Special Needs",
+      "notes": "Notes"
+    },
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "age": "{{years}} years old"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "empty": "No reviews yet.",
+    "writeReview": "Write a Review",
+    "rating": "Rating",
+    "comment": "Comment",
+    "submit": "Submit",
+    "helpful": "Was this review helpful?",
+    "report": "Report"
+  },
+  "settings": {
+    "title": "Settings",
+    "account": {
+      "title": "Account",
+      "email": "Email",
+      "phone": "Phone",
+      "password": "Password",
+      "changePassword": "Change Password",
+      "deleteAccount": "Delete Account"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "email": "Email Notifications",
+      "push": "Push Notifications",
+      "sms": "SMS Notifications",
+      "bookingUpdates": "Booking Updates",
+      "messages": "Messages",
+      "marketing": "Marketing"
+    },
+    "privacy": {
+      "title": "Privacy",
+      "profileVisibility": "Profile Visibility",
+      "locationSharing": "Location Sharing",
+      "dataExport": "Export My Data",
+      "dataDelete": "Delete My Data"
+    },
+    "language": {
+      "title": "Language",
+      "select": "Select Language"
+    },
+    "theme": {
+      "title": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    }
+  },
+  "disputes": {
+    "title": "Disputes",
+    "empty": "No open disputes.",
+    "create": "Create Dispute",
+    "status": {
+      "open": "Open",
+      "inReview": "In Review",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "form": {
+      "reason": "Reason",
+      "description": "Description",
+      "evidence": "Upload Evidence"
+    }
+  },
+  "errors": {
+    "general": "An error occurred",
+    "network": "Connection error. Please check your internet.",
+    "unauthorized": "You don't have permission for this action.",
+    "notFound": "The page you're looking for was not found.",
+    "validation": {
+      "required": "This field is required.",
+      "email": "Please enter a valid email address.",
+      "phone": "Please enter a valid phone number.",
+      "password": "Password must be at least 8 characters.",
+      "passwordMatch": "Passwords don't match.",
+      "minLength": "Must be at least {{min}} characters.",
+      "maxLength": "Must be at most {{max}} characters."
+    },
+    "auth": {
+      "invalidCredentials": "Invalid email or password.",
+      "emailInUse": "This email is already in use.",
+      "weakPassword": "Password is too weak.",
+      "tooManyAttempts": "Too many failed attempts. Please try again later."
+    },
+    "fillAllFields": "Please fill in all fields."
+  },
+  "dashboard": {
+    "parent": {
+      "title": "Parent Dashboard",
+      "welcome": "Welcome, {{name}}",
+      "upcomingBookings": "Upcoming Bookings",
+      "recentActivity": "Recent Activity",
+      "findSitter": "Find a Sitter",
+      "myChildren": "My Children"
+    },
+    "sitter": {
+      "title": "Sitter Dashboard",
+      "welcome": "Welcome, {{name}}",
+      "earnings": "Earnings",
+      "upcomingSessions": "Upcoming Sessions",
+      "pendingRequests": "Pending Requests",
+      "availability": "Availability"
     }
   },
   "languages": {
