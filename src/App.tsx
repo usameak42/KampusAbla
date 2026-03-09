@@ -237,16 +237,15 @@ const App = () => (
                   <Route path="/reset-password" element={<ResetPassword />} />
                    <Route path="/unauthorized" element={<NotFound />} />
 
-                  {/* Admin Routes */}
-                  <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-                  <Route path="/admin/login" element={<AdminLogin />} />
-                  <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-                  <Route path="/admin/users" element={<AdminRoute><UserManagement /></AdminRoute>} />
-                  <Route path="/admin/verifications" element={<AdminRoute><VerificationQueue /></AdminRoute>} />
-                  <Route path="/admin/reports" element={<AdminRoute><ReportsQueue /></AdminRoute>} />
-                  <Route path="/admin/monitoring" element={<AdminRoute><AnalyticsDashboard /></AdminRoute>} />
-                  <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
-                  <Route path="/admin/error-logs" element={<AdminRoute><AdminErrorLogs /></AdminRoute>} />
+                  {/* Admin Routes — obfuscated paths */}
+                  <Route path="/mgmt/auth" element={<AdminLogin />} />
+                  <Route path="/mgmt/panel" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                  <Route path="/mgmt/panel/users" element={<AdminRoute><UserManagement /></AdminRoute>} />
+                  <Route path="/mgmt/panel/verifications" element={<AdminRoute><VerificationQueue /></AdminRoute>} />
+                  <Route path="/mgmt/panel/reports" element={<AdminRoute><ReportsQueue /></AdminRoute>} />
+                  <Route path="/mgmt/panel/monitoring" element={<AdminRoute><AnalyticsDashboard /></AdminRoute>} />
+                  <Route path="/mgmt/panel/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+                  <Route path="/mgmt/panel/error-logs" element={<AdminRoute><AdminErrorLogs /></AdminRoute>} />
 
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
