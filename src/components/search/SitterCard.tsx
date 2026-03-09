@@ -117,15 +117,8 @@ export function SitterCard({
                     </div>
 
                     {(sitter.isVerified || sitter.verifiedAt) && (
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                        <Badge variant="secondary" className="bg-accent text-accent-foreground">
                             <Shield className="h-3 w-3 mr-1" />
-                            Doğrulanmış
-                        </Badge>
-                    )}
-
-                    {sitter.verifiedAt && (
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
                             Doğrulanmış
                         </Badge>
                     )}
