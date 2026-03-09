@@ -295,7 +295,22 @@ export default function UserManagement() {
                                                 <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-200">
                                                     <DropdownMenuLabel>İşlemler</DropdownMenuLabel>
                                                     <DropdownMenuSeparator className="bg-slate-800" />
-                                                    <DropdownMenuItem className="hover:bg-slate-800 cursor-pointer">
+                                                    <DropdownMenuItem
+                                                        className="hover:bg-slate-800 cursor-pointer"
+                                                        onClick={() => {
+                                                            const profilePath = user.role === "sitter"
+                                                                ? `/sitters/${user.userId}`
+                                                                : undefined;
+                                                            if (profilePath) {
+                                                                window.open(profilePath, "_blank");
+                                                            } else {
+                                                                toast({
+                                                                    title: "Bilgi",
+                                                                    description: `${user.fullName} — Rol: Ebeveyn, İlçe: ${user.details?.district || "-"}, Telefon: ${user.details?.phone || "-"}`,
+                                                                });
+                                                            }
+                                                        }}
+                                                    >
                                                         <Users className="mr-2 h-4 w-4" />
                                                         Profil Görüntüle
                                                     </DropdownMenuItem>
