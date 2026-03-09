@@ -131,6 +131,55 @@
     --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.25);
     --shadow-elevated: 0 12px 40px -8px hsl(0 0% 0% / 0.4);
   }
+
+  /* Admin panel — medium-dark grey theme */
+  .admin-theme {
+    --background: 220 10% 18%;
+    --foreground: 220 10% 90%;
+
+    --card: 220 10% 22%;
+    --card-foreground: 220 10% 90%;
+
+    --popover: 220 10% 22%;
+    --popover-foreground: 220 10% 90%;
+
+    --primary: 15 75% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 8% 28%;
+    --secondary-foreground: 220 10% 85%;
+
+    --muted: 220 8% 26%;
+    --muted-foreground: 220 8% 58%;
+
+    --accent: 220 10% 30%;
+    --accent-foreground: 220 10% 88%;
+
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 145 50% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 40 80% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --trust: 210 60% 55%;
+    --trust-foreground: 0 0% 100%;
+
+    --border: 220 8% 28%;
+    --input: 220 8% 28%;
+    --ring: 15 75% 55%;
+
+    --sidebar-background: 220 10% 15%;
+    --sidebar-foreground: 220 10% 85%;
+    --sidebar-primary: 15 75% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 8% 24%;
+    --sidebar-accent-foreground: 220 10% 85%;
+    --sidebar-border: 220 8% 25%;
+    --sidebar-ring: 15 75% 55%;
+  }
 }
 
 @layer base {
