@@ -75,13 +75,7 @@ export default function AdminDashboard() {
         fetchStats();
     }, []);
 
-    const quickActions = [
-        { label: "Kullanıcı Yönetimi", icon: Users, path: "/admin/users" },
-        { label: "Onay Kuyruğu", icon: ShieldCheck, path: "/admin/verifications" },
-        { label: "Rapor Yönetimi", icon: AlertTriangle, path: "/admin/reports" },
-        { label: "Sistem İzleme", icon: BarChart3, path: "/admin/monitoring" },
-        { label: "Sistem Ayarları", icon: Settings, path: "/admin/settings" },
-    ];
+    const { quickActions, allActions, quickActionIds, toggleAction } = useAdminQuickActions();
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 pb-12">
