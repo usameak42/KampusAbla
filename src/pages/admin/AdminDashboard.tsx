@@ -10,11 +10,16 @@ import {
     Bell,
     MessageSquare,
     AlertTriangle,
-    CheckCircle2
+    CheckCircle2,
+    Grid3X3,
+    Star,
+    StarOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useAuthentication } from "@/hooks/useAuthentication";
+import { useAdminQuickActions, ALL_ADMIN_ACTIONS } from "@/hooks/useAdminQuickActions";
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
@@ -70,13 +75,7 @@ export default function AdminDashboard() {
         fetchStats();
     }, []);
 
-    const quickActions = [
-        { label: "Kullanıcı Yönetimi", icon: Users, path: "/admin/users" },
-        { label: "Onay Kuyruğu", icon: ShieldCheck, path: "/admin/verifications" },
-        { label: "Rapor Yönetimi", icon: AlertTriangle, path: "/admin/reports" },
-        { label: "Sistem İzleme", icon: BarChart3, path: "/admin/monitoring" },
-        { label: "Sistem Ayarları", icon: Settings, path: "/admin/settings" },
-    ];
+    const { quickActions, allActions, quickActionIds, toggleAction } = useAdminQuickActions();
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 pb-12">
@@ -132,16 +131,24 @@ export default function AdminDashboard() {
                     ))}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                     {/* Quick Actions */}
                     <Card className="lg:col-span-1 bg-slate-900 border-slate-800 shadow-xl">
                         <CardHeader>
-                            <CardTitle className="text-lg font-bold">Quick Actions</CardTitle>
+                            <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                <Star className="h-4 w-4 text-amber-400" />
+                                Hızlı Erişim
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
+                            {quickActions.length === 0 && (
+                                <p className="text-sm text-slate-500 text-center py-4">
+                                    Aşağıdaki listeden hızlı erişime ekleyin.
+                                </p>
+                            )}
                             {quickActions.map((action) => (
                                 <Button
-                                    key={action.path}
+                                    key={action.id}
                                     variant="outline"
                                     className="w-full justify-start border-slate-700 bg-slate-800/50 hover:bg-slate-800 hover:border-purple-500/50 text-slate-200 transition-all"
                                     onClick={() => navigate(action.path)}
@@ -177,6 +184,54 @@ export default function AdminDashboard() {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* All Actions */}
+                <Card className="bg-slate-900 border-slate-800 shadow-xl">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-bold flex items-center gap-2">
+                            <Grid3X3 className="h-4 w-4 text-slate-400" />
+                            Tüm İşlemler
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {allActions.map((action) => {
+                                const isPinned = quickActionIds.includes(action.id);
+                                return (
+                                    <div
+                                        key={action.id}
+                                        className="flex items-center gap-3 p-3 rounded-lg border border-slate-700 bg-slate-800/30 hover:bg-slate-800 hover:border-purple-500/30 transition-all group cursor-pointer"
+                                        onClick={() => navigate(action.path)}
+                                    >
+                                        <div className="p-2 rounded-lg bg-slate-700/50 group-hover:bg-slate-700 transition-colors">
+                                            <action.icon className="h-4 w-4 text-purple-400" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-slate-200">{action.label}</p>
+                                            <p className="text-xs text-slate-500 truncate">{action.description}</p>
+                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7 shrink-0 text-slate-500 hover:text-amber-400"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleAction(action.id);
+                                            }}
+                                            title={isPinned ? "Hızlı erişimden kaldır" : "Hızlı erişime ekle"}
+                                        >
+                                            {isPinned ? (
+                                                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                                            ) : (
+                                                <StarOff className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </CardContent>
+                </Card>
             </main>
         </div>
     );
