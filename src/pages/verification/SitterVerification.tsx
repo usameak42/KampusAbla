@@ -184,6 +184,14 @@ export default function SitterVerification() {
                         status={verificationData.status}
                         progress={progress}
                         rejectionReason={verificationData.rejectionReason}
+                        completedDocs={{
+                            studentId: !!verificationData.studentIdUrl,
+                            transcript: !!verificationData.transcriptUrl,
+                            studentCertificate: !!verificationData.studentCertificateUrl,
+                            governmentId: !!verificationData.governmentIdUrl,
+                            selfie: !!verificationData.selfieUrl,
+                            backgroundCheck: !!verificationData.backgroundCheckUrl,
+                        }}
                     />
                 </div>
 

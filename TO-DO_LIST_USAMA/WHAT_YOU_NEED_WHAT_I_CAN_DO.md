@@ -22,7 +22,7 @@
 - ✅ Consent checkboxes in registration (Parent & Sitter)
 - ✅ Child data consent in AddChildForm
 - ✅ Location consent component
-- 🔨 Improve verification status display
+- ✅ Improve verification status display (step indicators, doc checklist, themed colors)
 - 🔨 Add document preview in upload forms
 
 ### Authentication
