@@ -36,7 +36,7 @@ export default function MyFavorites() {
 
     // Filter to show only favorited sitters
     const favoriteSitters = useMemo(() => {
-        return allSitters.filter((sitter) => favorites.includes(sitter.id));
+        return allSitters.filter((sitter: Sitter) => favorites.includes(sitter.id));
     }, [allSitters, favorites]);
 
     const handleViewProfile = (sitterId: string) => {
@@ -81,7 +81,7 @@ export default function MyFavorites() {
                 {/* Content */}
                 {favoriteSitters.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {favoriteSitters.map((sitter) => (
+                        {favoriteSitters.map((sitter: Sitter) => (
                             <SitterCard
                                 key={sitter.id}
                                 sitter={sitter}

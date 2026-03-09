@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { SitterCard } from "@/components/search/SitterCard";
 import { SearchFilters, SearchFiltersType } from "@/components/search/SearchFilters";
 import { SortDropdown, SortOption } from "@/components/search/SortDropdown";
-import { useSearchSitters } from "@/hooks/useSearchSitters";
+import { useSearchSitters, Sitter } from "@/hooks/useSearchSitters";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Search, Grid3x3, Map, SlidersHorizontal, X, Heart } from "lucide-react";
@@ -56,6 +56,11 @@ export default function FindSitters() {
     const [filters, setFilters] = useState<SearchFiltersType>(loadFiltersFromStorage);
     const [sortBy, setSortBy] = useState<SortOption>("relevance");
     const [page, setPage] = useState(1);
+
+    // Reset page when filters, sort, or search change
+    useEffect(() => {
+        setPage(1);
+    }, [filters, sortBy, searchQuery]);
 
     // Persist filters to localStorage whenever they change
     useEffect(() => {
@@ -224,7 +229,7 @@ export default function FindSitters() {
                                     </div>
                                 ) : sitters.length > 0 ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {sitters.map((sitter) => (
+                                        {sitters.map((sitter: Sitter) => (
                                             <SitterCard
                                                 key={sitter.id}
                                                 sitter={sitter}
