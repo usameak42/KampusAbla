@@ -198,6 +198,38 @@
   [dir="rtl"] {
     text-align: right;
   }
+
+  [dir="rtl"] .flex-row {
+    flex-direction: row-reverse;
+  }
+
+  [dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1;
+  }
+
+  [dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1;
+  }
+
+  [dir="rtl"] .ml-auto {
+    margin-left: unset;
+    margin-right: auto;
+  }
+
+  [dir="rtl"] .mr-2 {
+    margin-right: unset;
+    margin-left: 0.5rem;
+  }
+
+  [dir="rtl"] .pl-10 {
+    padding-left: unset;
+    padding-right: 2.5rem;
+  }
+
+  [dir="rtl"] .left-3 {
+    left: unset;
+    right: 0.75rem;
+  }
 }
 
 @layer utilities {

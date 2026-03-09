@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ShieldCheck, Lock, Mail, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ function setAttemptState(count: number, lockedUntil: number | null) {
 
 export default function AdminLogin() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { handleSignIn, isLoading } = useAuthentication();
     const { toast } = useToast();
 
@@ -78,8 +80,8 @@ export default function AdminLogin() {
 
         if (!email || !password) {
             toast({
-                title: "Hata",
-                description: "Lütfen tüm alanları doldurun.",
+                title: t("common.error"),
+                description: t("errors.fillAllFields"),
                 variant: "destructive",
             });
             return;
@@ -115,8 +117,8 @@ export default function AdminLogin() {
             }
 
             toast({
-                title: "Yetkisiz Erişim",
-                description: "Bu bölüme erişmek için yönetici yetkiniz bulunmuyor.",
+                title: t("auth.admin.unauthorized"),
+                description: t("auth.admin.noPermission"),
                 variant: "destructive",
             });
         } catch {
@@ -147,7 +149,7 @@ export default function AdminLogin() {
                     onClick={() => navigate("/")}
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Siteye Dön
+                    {t("auth.admin.backToSite")}
                 </Button>
 
                 <div className="flex items-center justify-center gap-3 mb-8">
@@ -161,25 +163,25 @@ export default function AdminLogin() {
 
                 <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-xl shadow-2xl">
                     <CardHeader className="space-y-1">
-                        <CardTitle className="text-2xl text-center text-white">Yönetici Girişi</CardTitle>
+                        <CardTitle className="text-2xl text-center text-white">{t("auth.admin.title")}</CardTitle>
                         <CardDescription className="text-center text-slate-400">
-                            Yönetici panelinize erişmek için kimlik bilgilerinizi girin
+                            {t("auth.admin.subtitle")}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         {isLocked ? (
                             <div className="text-center py-6">
                                 <Lock className="h-10 w-10 text-red-400 mx-auto mb-3" />
-                                <p className="text-red-400 font-semibold mb-1">Çok fazla başarısız deneme</p>
+                                <p className="text-red-400 font-semibold mb-1">{t("auth.admin.tooManyAttempts")}</p>
                                 <p className="text-slate-400 text-sm">
-                                    Lütfen <span className="font-mono text-white">{formatTime(lockRemaining)}</span> sonra tekrar deneyin.
+                                    {t("auth.admin.tryAgainIn", { time: formatTime(lockRemaining) })}
                                 </p>
                             </div>
                         ) : (
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-300" htmlFor="email">
-                                        E-posta
+                                        {t("auth.login.email")}
                                     </label>
                                     <div className="relative">
                                         <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
@@ -197,7 +199,7 @@ export default function AdminLogin() {
 
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-300" htmlFor="password">
-                                        Şifre
+                                        {t("auth.login.password")}
                                     </label>
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
@@ -220,10 +222,10 @@ export default function AdminLogin() {
                                     {isLoading ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Giriş Yapılıyor...
+                                            {t("auth.login.loggingIn", "Giriş Yapılıyor...")}
                                         </>
                                     ) : (
-                                        "Giriş Yap"
+                                        t("auth.login.button")
                                     )}
                                 </Button>
                             </form>
@@ -232,7 +234,7 @@ export default function AdminLogin() {
                 </Card>
 
                 <p className="mt-8 text-center text-slate-500 text-sm">
-                    &copy; 2026 KampusAbla. Tüm hakları saklıdır.
+                    {t("auth.admin.copyright", { year: new Date().getFullYear() })}
                 </p>
             </div>
         </div>

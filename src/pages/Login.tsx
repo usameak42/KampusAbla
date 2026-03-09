@@ -1,10 +1,11 @@
 /**
  * Login Page
- * Unified login with email/password or phone/password authentication
+ * Unified login with email/password authentication
  */
 
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuthentication } from "@/hooks/useAuthentication";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ import { validateEmailAscii } from "@/utils/emailValidator";
 export default function Login() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useTranslation();
     const { handleSignIn, isLoading } = useAuthentication();
 
     const [email, setEmail] = useState("");
@@ -56,20 +58,22 @@ export default function Login() {
         <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
             <Card className="w-full max-w-md">
                 <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl font-bold text-center">KampusAbla'ya Hoş Geldiniz</CardTitle>
+                    <CardTitle className="text-2xl font-bold text-center">
+                        KampusAbla - {t("auth.login.title")}
+                    </CardTitle>
                     <CardDescription className="text-center">
-                        Hesabınıza giriş yapın
+                        {t("auth.login.subtitle")}
                     </CardDescription>
                 </CardHeader>
 
                 <CardContent>
                     <form onSubmit={handleLogin} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email">E-posta Adresi</Label>
+                            <Label htmlFor="email">{t("auth.login.email")}</Label>
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="ornek@email.com"
+                                placeholder={t("auth.login.emailPlaceholder", "ornek@email.com")}
                                 value={email}
                                 onChange={(e) => handleEmailChange(e.target.value)}
                                 required
@@ -83,14 +87,14 @@ export default function Login() {
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="password">Şifre</Label>
+                                <Label htmlFor="password">{t("auth.login.password")}</Label>
                                 <Button
                                     variant="link"
                                     className="p-0 h-auto font-normal text-sm"
                                     onClick={() => navigate("/forgot-password")}
                                     type="button"
                                 >
-                                    Şifremi unuttum
+                                    {t("auth.login.forgotPassword")}
                                 </Button>
                             </div>
                             <Input
@@ -113,26 +117,32 @@ export default function Login() {
                                 disabled={isLoading}
                             />
                             <Label htmlFor="rememberMe" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                Beni Hatırla
+                                {t("auth.login.rememberMe")}
                             </Label>
                         </div>
 
                         <Button type="submit" className="w-full" disabled={isLoading || !!emailError}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Giriş Yap
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    {t("auth.login.loggingIn", "Giriş yapılıyor...")}
+                                </>
+                            ) : (
+                                t("auth.login.button")
+                            )}
                         </Button>
                     </form>
                 </CardContent>
 
                 <CardFooter className="flex flex-col space-y-2">
                     <div className="text-sm text-muted-foreground text-center">
-                        Hesabınız yok mu?{" "}
+                        {t("auth.login.noAccount")}{" "}
                         <Button
                             variant="link"
                             className="p-0 h-auto font-semibold"
                             onClick={() => navigate("/register")}
                         >
-                            Kayıt Ol
+                            {t("auth.signup.button")}
                         </Button>
                     </div>
                 </CardFooter>

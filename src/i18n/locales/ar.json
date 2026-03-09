@@ -21,7 +21,11 @@
     "none": "لا شيء",
     "viewMore": "عرض المزيد",
     "seeAll": "عرض الكل",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "required": "مطلوب",
+    "optional": "اختياري",
+    "success": "نجاح",
+    "pleaseWait": "يرجى الانتظار..."
   },
   "nav": {
     "home": "الرئيسية",
@@ -118,11 +122,14 @@
       "title": "أهلاً بعودتك",
       "subtitle": "سجلي الدخول إلى حسابك",
       "email": "البريد الإلكتروني",
+      "emailPlaceholder": "example@email.com",
       "password": "كلمة المرور",
       "forgotPassword": "نسيت كلمة المرور",
       "noAccount": "ليس لديك حساب؟",
       "createAccount": "إنشاء حساب",
-      "button": "تسجيل الدخول"
+      "button": "تسجيل الدخول",
+      "loggingIn": "جاري تسجيل الدخول...",
+      "rememberMe": "تذكرني"
     },
     "signup": {
       "title": "إنشاء حساب",
@@ -154,6 +161,174 @@
       "button": "إرسال رابط إعادة التعيين",
       "backToLogin": "العودة لتسجيل الدخول",
       "success": "تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني"
+    },
+    "admin": {
+      "title": "تسجيل دخول المدير",
+      "subtitle": "أدخل بيانات اعتمادك للوصول إلى لوحة الإدارة",
+      "backToSite": "العودة للموقع",
+      "unauthorized": "وصول غير مصرح",
+      "noPermission": "ليس لديك صلاحيات المدير للوصول إلى هذا القسم.",
+      "tooManyAttempts": "محاولات فاشلة كثيرة جداً",
+      "tryAgainIn": "يرجى المحاولة مرة أخرى بعد {{time}}.",
+      "copyright": "© {{year}} KampusAbla. جميع الحقوق محفوظة."
+    }
+  },
+  "bookings": {
+    "title": "حجوزاتي",
+    "empty": "ليس لديك أي حجوزات بعد.",
+    "status": {
+      "pending": "قيد الانتظار",
+      "confirmed": "مؤكد",
+      "inProgress": "قيد التنفيذ",
+      "completed": "مكتمل",
+      "cancelled": "ملغى"
+    },
+    "actions": {
+      "cancel": "إلغاء",
+      "view": "عرض",
+      "reschedule": "إعادة جدولة"
+    },
+    "details": {
+      "date": "التاريخ",
+      "time": "الوقت",
+      "duration": "المدة",
+      "location": "الموقع",
+      "children": "الأطفال",
+      "notes": "ملاحظات",
+      "totalAmount": "المبلغ الإجمالي"
+    },
+    "create": {
+      "title": "حجز جديد",
+      "selectSitter": "اختر مربية",
+      "selectChildren": "اختر الأطفال",
+      "selectDate": "اختر التاريخ",
+      "selectTime": "اختر الوقت",
+      "addNotes": "إضافة ملاحظات",
+      "confirm": "تأكيد الحجز"
+    }
+  },
+  "children": {
+    "title": "أطفالي",
+    "empty": "لم تضف أي أطفال بعد.",
+    "add": "إضافة طفل",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "form": {
+      "name": "الاسم",
+      "birthDate": "تاريخ الميلاد",
+      "gender": "الجنس",
+      "allergies": "الحساسية",
+      "specialNeeds": "الاحتياجات الخاصة",
+      "notes": "ملاحظات"
+    },
+    "gender": {
+      "male": "ذكر",
+      "female": "أنثى",
+      "other": "آخر"
+    },
+    "age": "{{years}} سنة"
+  },
+  "reviews": {
+    "title": "التقييمات",
+    "empty": "لا توجد تقييمات بعد.",
+    "writeReview": "اكتب تقييماً",
+    "rating": "التقييم",
+    "comment": "تعليق",
+    "submit": "إرسال",
+    "helpful": "هل كان هذا التقييم مفيداً؟",
+    "report": "إبلاغ"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "account": {
+      "title": "الحساب",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "password": "كلمة المرور",
+      "changePassword": "تغيير كلمة المرور",
+      "deleteAccount": "حذف الحساب"
+    },
+    "notifications": {
+      "title": "الإشعارات",
+      "email": "إشعارات البريد الإلكتروني",
+      "push": "الإشعارات الفورية",
+      "sms": "إشعارات الرسائل النصية",
+      "bookingUpdates": "تحديثات الحجز",
+      "messages": "الرسائل",
+      "marketing": "التسويق"
+    },
+    "privacy": {
+      "title": "الخصوصية",
+      "profileVisibility": "ظهور الملف الشخصي",
+      "locationSharing": "مشاركة الموقع",
+      "dataExport": "تصدير بياناتي",
+      "dataDelete": "حذف بياناتي"
+    },
+    "language": {
+      "title": "اللغة",
+      "select": "اختر اللغة"
+    },
+    "theme": {
+      "title": "المظهر",
+      "light": "فاتح",
+      "dark": "داكن",
+      "system": "النظام"
+    }
+  },
+  "disputes": {
+    "title": "النزاعات",
+    "empty": "لا توجد نزاعات مفتوحة.",
+    "create": "إنشاء نزاع",
+    "status": {
+      "open": "مفتوح",
+      "inReview": "قيد المراجعة",
+      "resolved": "تم الحل",
+      "closed": "مغلق"
+    },
+    "form": {
+      "reason": "السبب",
+      "description": "الوصف",
+      "evidence": "رفع الأدلة"
+    }
+  },
+  "errors": {
+    "general": "حدث خطأ",
+    "network": "خطأ في الاتصال. يرجى التحقق من الإنترنت.",
+    "unauthorized": "ليس لديك صلاحية لهذا الإجراء.",
+    "notFound": "الصفحة التي تبحث عنها غير موجودة.",
+    "validation": {
+      "required": "هذا الحقل مطلوب.",
+      "email": "يرجى إدخال بريد إلكتروني صالح.",
+      "phone": "يرجى إدخال رقم هاتف صالح.",
+      "password": "يجب أن تكون كلمة المرور 8 أحرف على الأقل.",
+      "passwordMatch": "كلمات المرور غير متطابقة.",
+      "minLength": "يجب أن تكون {{min}} أحرف على الأقل.",
+      "maxLength": "يجب أن تكون {{max}} أحرف على الأكثر."
+    },
+    "auth": {
+      "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      "emailInUse": "هذا البريد الإلكتروني مستخدم بالفعل.",
+      "weakPassword": "كلمة المرور ضعيفة جداً.",
+      "tooManyAttempts": "محاولات فاشلة كثيرة جداً. يرجى المحاولة لاحقاً."
+    },
+    "fillAllFields": "يرجى ملء جميع الحقول."
+  },
+  "dashboard": {
+    "parent": {
+      "title": "لوحة تحكم ولي الأمر",
+      "welcome": "مرحباً، {{name}}",
+      "upcomingBookings": "الحجوزات القادمة",
+      "recentActivity": "النشاط الأخير",
+      "findSitter": "ابحث عن مربية",
+      "myChildren": "أطفالي"
+    },
+    "sitter": {
+      "title": "لوحة تحكم المربية",
+      "welcome": "مرحباً، {{name}}",
+      "earnings": "الأرباح",
+      "upcomingSessions": "الجلسات القادمة",
+      "pendingRequests": "الطلبات المعلقة",
+      "availability": "التوفر"
     }
   },
   "languages": {

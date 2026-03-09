@@ -21,7 +21,11 @@
     "none": "Hiçbiri",
     "viewMore": "Daha fazla",
     "seeAll": "Tümünü gör",
-    "close": "Kapat"
+    "close": "Kapat",
+    "required": "Zorunlu",
+    "optional": "İsteğe bağlı",
+    "success": "Başarılı",
+    "pleaseWait": "Lütfen bekleyin..."
   },
   "nav": {
     "home": "Ana Sayfa",
@@ -118,11 +122,14 @@
       "title": "Hoş Geldiniz",
       "subtitle": "Hesabınıza giriş yapın",
       "email": "E-posta",
+      "emailPlaceholder": "ornek@email.com",
       "password": "Şifre",
       "forgotPassword": "Şifremi Unuttum",
       "noAccount": "Hesabınız yok mu?",
       "createAccount": "Hesap Oluştur",
-      "button": "Giriş Yap"
+      "button": "Giriş Yap",
+      "loggingIn": "Giriş yapılıyor...",
+      "rememberMe": "Beni Hatırla"
     },
     "signup": {
       "title": "Hesap Oluştur",
@@ -154,6 +161,174 @@
       "button": "Sıfırlama Bağlantısı Gönder",
       "backToLogin": "Giriş'e Dön",
       "success": "Sıfırlama bağlantısı e-posta adresinize gönderildi"
+    },
+    "admin": {
+      "title": "Yönetici Girişi",
+      "subtitle": "Yönetici panelinize erişmek için kimlik bilgilerinizi girin",
+      "backToSite": "Siteye Dön",
+      "unauthorized": "Yetkisiz Erişim",
+      "noPermission": "Bu bölüme erişmek için yönetici yetkiniz bulunmuyor.",
+      "tooManyAttempts": "Çok fazla başarısız deneme",
+      "tryAgainIn": "Lütfen {{time}} sonra tekrar deneyin.",
+      "copyright": "© {{year}} KampusAbla. Tüm hakları saklıdır."
+    }
+  },
+  "bookings": {
+    "title": "Rezervasyonlarım",
+    "empty": "Henüz rezervasyonunuz bulunmuyor.",
+    "status": {
+      "pending": "Beklemede",
+      "confirmed": "Onaylandı",
+      "inProgress": "Devam Ediyor",
+      "completed": "Tamamlandı",
+      "cancelled": "İptal Edildi"
+    },
+    "actions": {
+      "cancel": "İptal Et",
+      "view": "Görüntüle",
+      "reschedule": "Yeniden Planla"
+    },
+    "details": {
+      "date": "Tarih",
+      "time": "Saat",
+      "duration": "Süre",
+      "location": "Konum",
+      "children": "Çocuklar",
+      "notes": "Notlar",
+      "totalAmount": "Toplam Tutar"
+    },
+    "create": {
+      "title": "Yeni Rezervasyon",
+      "selectSitter": "Abla Seçin",
+      "selectChildren": "Çocuk Seçin",
+      "selectDate": "Tarih Seçin",
+      "selectTime": "Saat Seçin",
+      "addNotes": "Not Ekleyin",
+      "confirm": "Rezervasyonu Onayla"
+    }
+  },
+  "children": {
+    "title": "Çocuklarım",
+    "empty": "Henüz çocuk profili eklemediniz.",
+    "add": "Çocuk Ekle",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "form": {
+      "name": "Ad",
+      "birthDate": "Doğum Tarihi",
+      "gender": "Cinsiyet",
+      "allergies": "Alerjiler",
+      "specialNeeds": "Özel İhtiyaçlar",
+      "notes": "Notlar"
+    },
+    "gender": {
+      "male": "Erkek",
+      "female": "Kız",
+      "other": "Diğer"
+    },
+    "age": "{{years}} yaşında"
+  },
+  "reviews": {
+    "title": "Değerlendirmeler",
+    "empty": "Henüz değerlendirme bulunmuyor.",
+    "writeReview": "Değerlendirme Yaz",
+    "rating": "Puan",
+    "comment": "Yorum",
+    "submit": "Gönder",
+    "helpful": "Bu değerlendirme yararlı mı?",
+    "report": "Şikayet Et"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "account": {
+      "title": "Hesap",
+      "email": "E-posta",
+      "phone": "Telefon",
+      "password": "Şifre",
+      "changePassword": "Şifre Değiştir",
+      "deleteAccount": "Hesabı Sil"
+    },
+    "notifications": {
+      "title": "Bildirimler",
+      "email": "E-posta Bildirimleri",
+      "push": "Anlık Bildirimler",
+      "sms": "SMS Bildirimleri",
+      "bookingUpdates": "Rezervasyon Güncellemeleri",
+      "messages": "Mesajlar",
+      "marketing": "Pazarlama"
+    },
+    "privacy": {
+      "title": "Gizlilik",
+      "profileVisibility": "Profil Görünürlüğü",
+      "locationSharing": "Konum Paylaşımı",
+      "dataExport": "Verilerimi İndir",
+      "dataDelete": "Verilerimi Sil"
+    },
+    "language": {
+      "title": "Dil",
+      "select": "Dil Seçin"
+    },
+    "theme": {
+      "title": "Tema",
+      "light": "Açık",
+      "dark": "Koyu",
+      "system": "Sistem"
+    }
+  },
+  "disputes": {
+    "title": "Anlaşmazlıklar",
+    "empty": "Açık anlaşmazlık bulunmuyor.",
+    "create": "Anlaşmazlık Oluştur",
+    "status": {
+      "open": "Açık",
+      "inReview": "İnceleniyor",
+      "resolved": "Çözüldü",
+      "closed": "Kapatıldı"
+    },
+    "form": {
+      "reason": "Sebep",
+      "description": "Açıklama",
+      "evidence": "Kanıt Yükle"
+    }
+  },
+  "errors": {
+    "general": "Bir hata oluştu",
+    "network": "Bağlantı hatası. Lütfen internetinizi kontrol edin.",
+    "unauthorized": "Bu işlem için yetkiniz bulunmuyor.",
+    "notFound": "Aradığınız sayfa bulunamadı.",
+    "validation": {
+      "required": "Bu alan zorunludur.",
+      "email": "Geçerli bir e-posta adresi girin.",
+      "phone": "Geçerli bir telefon numarası girin.",
+      "password": "Şifre en az 8 karakter olmalıdır.",
+      "passwordMatch": "Şifreler eşleşmiyor.",
+      "minLength": "En az {{min}} karakter olmalıdır.",
+      "maxLength": "En fazla {{max}} karakter olabilir."
+    },
+    "auth": {
+      "invalidCredentials": "E-posta veya şifre hatalı.",
+      "emailInUse": "Bu e-posta adresi zaten kullanımda.",
+      "weakPassword": "Şifre çok zayıf.",
+      "tooManyAttempts": "Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin."
+    },
+    "fillAllFields": "Lütfen tüm alanları doldurun."
+  },
+  "dashboard": {
+    "parent": {
+      "title": "Ebeveyn Paneli",
+      "welcome": "Hoş geldiniz, {{name}}",
+      "upcomingBookings": "Yaklaşan Rezervasyonlar",
+      "recentActivity": "Son Aktivite",
+      "findSitter": "Abla Bul",
+      "myChildren": "Çocuklarım"
+    },
+    "sitter": {
+      "title": "Abla Paneli",
+      "welcome": "Hoş geldiniz, {{name}}",
+      "earnings": "Kazançlar",
+      "upcomingSessions": "Yaklaşan Seanslar",
+      "pendingRequests": "Bekleyen Talepler",
+      "availability": "Müsaitlik"
     }
   },
   "languages": {
