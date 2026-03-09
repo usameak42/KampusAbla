@@ -94,7 +94,7 @@ export function SitterStep4({ formData, updateFormData, onNext, onBack }: Sitter
 
             const fileExt = file.name.split(".").pop();
             const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-            const filePath = `intro-videos/${user.id}/${fileName}`;
+            const filePath = `${user.id}/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from("intro-videos")
