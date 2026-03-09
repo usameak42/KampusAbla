@@ -211,6 +211,6 @@ export default function AdminErrorLogs() {
                     </CardContent>
                 </Card>
             </div>
-        </AppLayout>
+        </div>
     );
 }
