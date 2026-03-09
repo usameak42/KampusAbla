@@ -163,7 +163,7 @@ export function Header() {
                 ) : (
                   <Link to="/dashboard" className="flex-1">
                     <Button className="btn-warm w-full" size="sm">
-                      Dashboard
+                      {t("nav.dashboard")}
                     </Button>
                   </Link>
                 )}
