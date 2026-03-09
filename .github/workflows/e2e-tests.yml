@@ -26,7 +26,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
           
       - name: Install dependencies
@@ -37,17 +37,18 @@ jobs:
         
       - name: Build application
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_STAGING }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_STAGING }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY_STAGING }}
         
-      - name: Start application
-        run: |
-          npm run preview &
-          sleep 10
-          
       - name: Run Playwright tests
         run: npx playwright test --project=${{ matrix.browser }}
         env:
-          # Base URL for the application (must match vite preview port in vite.config.ts)
           BASE_URL: http://localhost:8080
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_STAGING }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_STAGING }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY_STAGING }}
           
       - name: Upload test results
         uses: actions/upload-artifact@v4
