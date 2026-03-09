@@ -46,30 +46,30 @@
   "landing": {
     "hero": {
       "title": "Trusted Student Sitters",
-      "subtitle": "Trusted Student Care",
-      "description": "Match with verified university students for safe play, Turkish/English practice, and homework help for your child.",
+      "subtitle": "School Pickup & Tutoring",
+      "description": "Match with verified university students for safe school pickups, Turkish/English practice, and homework help.",
       "ctaParent": "Find a Sitter",
       "ctaStudent": "Become a Sitter",
       "trustBadge": "{{count}}+ Verified Students"
     },
     "features": {
       "title": "Why KampusAbla?",
-      "subtitle": "A platform designed with safety in mind",
+      "subtitle": "A platform designed with safety first",
       "verified": {
         "title": "Verified Students",
-        "description": "3rd year+ university students vetted with ID, student verification, and background checks"
+        "description": "3rd-year+ university students vetted with ID, enrollment verification, and background checks."
       },
       "location": {
         "title": "Live Location Tracking",
-        "description": "Real-time location sharing during pickup for complete peace of mind"
+        "description": "Real-time location sharing during pickups for complete peace of mind."
       },
       "chat": {
         "title": "Secure Communication",
-        "description": "In-app messaging without sharing phone numbers"
+        "description": "In-app messaging without sharing your phone number."
       },
       "payment": {
-        "title": "Secure Payment",
-        "description": "Pay before session, protected by the platform"
+        "title": "Secure Payments",
+        "description": "Pay securely before the session, protected by the platform."
       }
     },
     "howItWorks": {
@@ -78,38 +78,38 @@
         "title": "For Parents",
         "step1": {
           "title": "Choose a Sitter",
-          "description": "Browse verified sitters near your school"
+          "description": "Browse verified sitters near your child's school."
         },
         "step2": {
           "title": "Book a Session",
-          "description": "Specify date, time, and your needs"
+          "description": "Select the date, time, and your specific needs."
         },
         "step3": {
           "title": "Track Live",
-          "description": "See every moment with live location"
+          "description": "Follow every step of the way with live location tracking."
         }
       },
       "student": {
         "title": "For Students",
         "step1": {
-          "title": "Create Profile",
-          "description": "Share your university info and skills"
+          "title": "Create a Profile",
+          "description": "Share your university details and skills."
         },
         "step2": {
           "title": "Get Verified",
-          "description": "Upload documents and get approved"
+          "description": "Upload your documents and get approved."
         },
         "step3": {
           "title": "Start Earning",
-          "description": "Earn ₺450-800/hour with flexible hours"
+          "description": "Earn ₺450-800/hour on a flexible schedule."
         }
       }
     },
     "stats": {
       "students": "Verified Students",
-      "sessions": "Sessions Completed",
+      "sessions": "Completed Sessions",
       "rating": "Average Rating",
-      "response": "Avg Response Time"
+      "response": "Avg. Response Time"
     },
     "cta": {
       "title": "Looking for a trusted sitter for your child?",
@@ -124,29 +124,29 @@
       "email": "Email",
       "emailPlaceholder": "example@email.com",
       "password": "Password",
-      "forgotPassword": "Forgot Password",
+      "forgotPassword": "Forgot Password?",
       "noAccount": "Don't have an account?",
-      "createAccount": "Create Account",
+      "createAccount": "Sign Up",
       "button": "Log In",
       "loggingIn": "Logging in...",
       "rememberMe": "Remember Me"
     },
     "signup": {
-      "title": "Create Account",
+      "title": "Create an Account",
       "subtitle": "Join KampusAbla",
       "roleSelection": {
-        "title": "How Would You Like to Join?",
+        "title": "How would you like to join?",
         "parent": {
           "title": "Parent",
-          "description": "I'm looking for a sitter for my child"
+          "description": "I'm looking for a sitter for my child."
         },
         "student": {
           "title": "Student",
-          "description": "I want to work as a sitter"
+          "description": "I want to work as a sitter."
         }
       },
       "email": "Email",
-      "phone": "Phone",
+      "phone": "Phone Number",
       "password": "Password",
       "confirmPassword": "Confirm Password",
       "hasAccount": "Already have an account?",
@@ -156,19 +156,19 @@
     },
     "resetPassword": {
       "title": "Reset Password",
-      "subtitle": "We'll send a reset link to your email",
+      "subtitle": "We'll send a password reset link to your email.",
       "email": "Email",
       "button": "Send Reset Link",
-      "backToLogin": "Back to Login",
-      "success": "Reset link sent to your email"
+      "backToLogin": "Back to Log In",
+      "success": "A reset link has been sent to your email."
     },
     "admin": {
       "title": "Admin Login",
-      "subtitle": "Enter your credentials to access the admin panel",
-      "backToSite": "Back to Site",
+      "subtitle": "Enter your credentials to access the admin panel.",
+      "backToSite": "Back to Website",
       "unauthorized": "Unauthorized Access",
-      "noPermission": "You don't have admin permissions to access this section.",
-      "tooManyAttempts": "Too many failed attempts",
+      "noPermission": "You don't have permission to access the admin panel.",
+      "tooManyAttempts": "Too many failed attempts.",
       "tryAgainIn": "Please try again in {{time}}.",
       "copyright": "© {{year}} KampusAbla. All rights reserved."
     }
@@ -181,11 +181,11 @@
       "confirmed": "Confirmed",
       "inProgress": "In Progress",
       "completed": "Completed",
-      "cancelled": "Cancelled"
+      "cancelled": "Canceled"
     },
     "actions": {
       "cancel": "Cancel",
-      "view": "View",
+      "view": "View Details",
       "reschedule": "Reschedule"
     },
     "details": {
@@ -201,8 +201,8 @@
       "title": "New Booking",
       "selectSitter": "Select a Sitter",
       "selectChildren": "Select Children",
-      "selectDate": "Select Date",
-      "selectTime": "Select Time",
+      "selectDate": "Choose Date",
+      "selectTime": "Choose Time",
       "addNotes": "Add Notes",
       "confirm": "Confirm Booking"
     }
@@ -215,15 +215,15 @@
     "delete": "Delete",
     "form": {
       "name": "Name",
-      "birthDate": "Birth Date",
+      "birthDate": "Date of Birth",
       "gender": "Gender",
       "allergies": "Allergies",
       "specialNeeds": "Special Needs",
       "notes": "Notes"
     },
     "gender": {
-      "male": "Male",
-      "female": "Female",
+      "male": "Boy",
+      "female": "Girl",
       "other": "Other"
     },
     "age": "{{years}} years old"
@@ -243,7 +243,7 @@
     "account": {
       "title": "Account",
       "email": "Email",
-      "phone": "Phone",
+      "phone": "Phone Number",
       "password": "Password",
       "changePassword": "Change Password",
       "deleteAccount": "Delete Account"
@@ -272,16 +272,16 @@
       "title": "Theme",
       "light": "Light",
       "dark": "Dark",
-      "system": "System"
+      "system": "System Default"
     }
   },
   "disputes": {
     "title": "Disputes",
     "empty": "No open disputes.",
-    "create": "Create Dispute",
+    "create": "Open a Dispute",
     "status": {
       "open": "Open",
-      "inReview": "In Review",
+      "inReview": "Under Review",
       "resolved": "Resolved",
       "closed": "Closed"
     },
@@ -292,26 +292,26 @@
     }
   },
   "errors": {
-    "general": "An error occurred",
-    "network": "Connection error. Please check your internet.",
-    "unauthorized": "You don't have permission for this action.",
-    "notFound": "The page you're looking for was not found.",
+    "general": "An error occurred.",
+    "network": "Connection error. Please check your internet connection.",
+    "unauthorized": "You don't have permission to perform this action.",
+    "notFound": "The page you're looking for could not be found.",
     "validation": {
       "required": "This field is required.",
       "email": "Please enter a valid email address.",
       "phone": "Please enter a valid phone number.",
-      "password": "Password must be at least 8 characters.",
-      "passwordMatch": "Passwords don't match.",
+      "password": "Password must be at least 8 characters long.",
+      "passwordMatch": "Passwords do not match.",
       "minLength": "Must be at least {{min}} characters.",
-      "maxLength": "Must be at most {{max}} characters."
+      "maxLength": "Cannot exceed {{max}} characters."
     },
     "auth": {
-      "invalidCredentials": "Invalid email or password.",
-      "emailInUse": "This email is already in use.",
+      "invalidCredentials": "Incorrect email or password.",
+      "emailInUse": "This email address is already in use.",
       "weakPassword": "Password is too weak.",
       "tooManyAttempts": "Too many failed attempts. Please try again later."
     },
-    "fillAllFields": "Please fill in all fields."
+    "fillAllFields": "Please fill in all required fields."
   },
   "dashboard": {
     "parent": {
@@ -346,7 +346,7 @@
       "support": "Support",
       "help": "Help Center",
       "safety": "Safety",
-      "contact": "Contact",
+      "contact": "Contact Us",
       "legal": "Legal",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
