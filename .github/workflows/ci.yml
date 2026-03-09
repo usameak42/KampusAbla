@@ -36,9 +36,9 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Use staging secrets for CI builds
+          # Use staging backend values for CI builds
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_STAGING }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_STAGING }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_STAGING }}
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY_STAGING }}
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
   
