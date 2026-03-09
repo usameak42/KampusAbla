@@ -158,11 +158,10 @@ export function useSession(options: UseSessionOptions = {}) {
 
             // 2. Notify the other party about the status change (best-effort, don't block status update)
             const statusLabels: Partial<Record<SessionStatus, string>> = {
-                on_way: "Bakıcı yola çıktı",
-                arrived: "Bakıcı evinize ulaştı",
-                picked_up: "Çocuk teslim alındı",
-                in_progress: "Seans başladı",
-                completed: "Seans tamamlandı",
+                "on-way": "Bakıcı yola çıktı",
+                "arrived": "Bakıcı evinize ulaştı",
+                "in-progress": "Seans başladı",
+                "completed": "Seans tamamlandı",
             };
 
             const label = statusLabels[newStatus];
