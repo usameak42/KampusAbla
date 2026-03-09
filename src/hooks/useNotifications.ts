@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useEffect } from "react";
+import { useCallback, useMemo, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Notification, NotificationType, NotificationCategory } from "@/types/notification";
 import { getUnreadCount, groupNotificationsByTime, NOTIFICATION_TYPE_INFO } from "@/types/notification";
@@ -67,6 +67,21 @@ export function useNotifications({ userId }: UseNotificationsOptions) {
 
         return () => {
             supabase.removeChannel(channel);
+        };
+    }, [userId, queryClient]);
+
+    // Auto-refresh every 30 seconds so new notifications are picked up
+    // even when the real-time channel misses an event.
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    useEffect(() => {
+        if (!userId) return;
+
+        intervalRef.current = setInterval(() => {
+            queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+        }, 30000);
+
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
         };
     }, [userId, queryClient]);
 

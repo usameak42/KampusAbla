@@ -27,6 +27,7 @@ import { STATUS_INFO, type SessionStatus } from "@/types/session";
 import { useSessionTracking } from "@/hooks/useSessionTracking";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { LiveTrackingMap } from "@/components/session/LiveTrackingMap";
 
 export default function ActiveSession() {
     const { sessionId } = useParams();
@@ -214,12 +215,13 @@ export default function ActiveSession() {
                         <CardContent>
                             <p className="text-sm">{session.address}</p>
                             <p className="text-sm text-muted-foreground">{session.district}</p>
-                            <Button variant="outline" className="mt-3 w-full" size="sm">
-                                <MapPin className="h-4 w-4 mr-2" />
-                                Haritada Göster
-                            </Button>
                         </CardContent>
                     </Card>
+
+                    {/* Live Tracking Map — visible to both parent and sitter */}
+                    {isSessionActive && (
+                        <LiveTrackingMap sessionId={session.id} />
+                    )}
                 </div>
 
                 {/* Right Column - Controls */}

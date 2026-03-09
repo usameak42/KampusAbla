@@ -21,6 +21,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { validateEmailAscii } from "@/utils/emailValidator";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ParentStep1Props {
     formData: Partial<ParentFormData>;
@@ -39,6 +40,8 @@ export function ParentStep1({ formData, updateFormData, onNext, onBack }: Parent
     const [confirmPassword, setConfirmPassword] = useState("");
     const [phone, setPhone] = useState(formData.phone || "");
     const [kvkkAccepted, setKvkkAccepted] = useState(false);
+    const [locationConsentAccepted, setLocationConsentAccepted] = useState(false);
+    const [childDataConsentAccepted, setChildDataConsentAccepted] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
 
     // Verification state
@@ -78,7 +81,21 @@ export function ParentStep1({ formData, updateFormData, onNext, onBack }: Parent
         }
 
         try {
-            await handleSignUp(email, password, { role: "parent", full_name: fullName, phone });
+            const signUpData = await handleSignUp(email, password, { role: "parent", full_name: fullName, phone });
+
+            // Log KVKK consents for the newly created user
+            const userId = signUpData?.user?.id;
+            if (userId) {
+                const consentInserts = [
+                    { user_id: userId, consent_type: "data_processing", granted: true },
+                    { user_id: userId, consent_type: "location_tracking", granted: locationConsentAccepted },
+                    { user_id: userId, consent_type: "child_data_processing", granted: childDataConsentAccepted },
+                ];
+                const { error: consentError } = await supabase.from("kvkk_consents").upsert(consentInserts);
+                if (consentError) {
+                    console.error("KVKK consent logging failed:", consentError);
+                }
+            }
 
             // Auto-confirm is enabled, so session should be available immediately
             // Skip SMS verification — store phone in metadata and proceed
@@ -301,7 +318,31 @@ export function ParentStep1({ formData, updateFormData, onNext, onBack }: Parent
                     </Label>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading || !kvkkAccepted}>
+                <div className="flex items-start space-x-2 py-2">
+                    <Checkbox
+                        id="locationConsent"
+                        checked={locationConsentAccepted}
+                        onCheckedChange={(checked) => setLocationConsentAccepted(checked === true)}
+                        className="mt-1"
+                    />
+                    <Label htmlFor="locationConsent" className="text-xs leading-normal cursor-pointer">
+                        Aktif seans sırasında bakıcının konumunun canlı olarak takip edilmesine onay veriyorum. *
+                    </Label>
+                </div>
+
+                <div className="flex items-start space-x-2 py-2">
+                    <Checkbox
+                        id="childDataConsent"
+                        checked={childDataConsentAccepted}
+                        onCheckedChange={(checked) => setChildDataConsentAccepted(checked === true)}
+                        className="mt-1"
+                    />
+                    <Label htmlFor="childDataConsent" className="text-xs leading-normal cursor-pointer">
+                        Çocuğuma ait kişisel verilerin platform tarafından işlenmesine (isim, yaş, özel ihtiyaçlar) onay veriyorum. *
+                    </Label>
+                </div>
+
+                <Button type="submit" className="w-full" disabled={isLoading || !kvkkAccepted || !locationConsentAccepted || !childDataConsentAccepted}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Kayıt Ol ve Devam Et
                 </Button>
