@@ -65,7 +65,7 @@ A 6-digit code sent via SMS to verify phone number ownership.
 ### Current Status:
 - ✅ Database tables exist: `kvkk_consents`
 - ✅ Legal pages exist: `/legal/kvkk`
-- ⚠️ Consent collection needs implementation
+- ✅ Consent collection implemented (see below)
 
 ### What YOU Need:
 
@@ -99,32 +99,32 @@ You MUST have these documents drafted by a lawyer:
 **When to ask for consent:**
 
 1. **Registration** (all users):
-   - [ ] Platform usage (general data processing)
+   - [x] Platform usage (general data processing) ✅ Implemented in ParentStep1 & SitterStep1
    - [ ] Marketing communications (optional)
-   - [ ] Account creation
+   - [x] Account creation ✅ Part of registration flow
 
 2. **Parent Registration** (additional):
-   - [ ] Child data processing
-   - [ ] Location tracking for sessions
-   - [ ] Sharing child info with sitters
+   - [x] Child data processing ✅ Implemented in `ParentStep1.tsx`
+   - [x] Location tracking for sessions ✅ Implemented in `ParentStep1.tsx`
+   - [x] Sharing child info with sitters ✅ Consent recorded in `kvkk_consents`
 
 3. **Sitter Registration** (additional):
-   - [ ] Background check processing
-   - [ ] Location tracking during sessions
-   - [ ] Public profile display
-   - [ ] Identity document processing
+   - [x] Background check processing ✅ Implemented in `SitterStep5.tsx`
+   - [x] Location tracking during sessions ✅ Implemented in `SitterStep1.tsx`
+   - [x] Public profile display ✅ Part of sitter registration
+   - [x] Identity document processing ✅ Implemented in `SitterStep5.tsx`
 
 4. **Before Each Session**:
-   - [ ] Live GPS tracking consent
+   - [x] Live GPS tracking consent ✅ `LocationConsent.tsx` component exists
    - [ ] Session recording consent
 
 #### C. Implementation Needed
 
 **Add consent checkboxes to:**
-- `src/pages/register/ParentRegistration.tsx`
-- `src/pages/register/SitterRegistration.tsx`
-- `src/components/location/LocationConsent.tsx` (already exists ✅)
-- `src/components/children/AddChildForm.tsx`
+- [x] `src/pages/register/ParentRegistration.tsx` ✅ Done in ParentStep1
+- [x] `src/pages/register/SitterRegistration.tsx` ✅ Done in SitterStep1 & SitterStep5
+- [x] `src/components/location/LocationConsent.tsx` ✅ Already exists
+- [x] `src/components/children/AddChildForm.tsx` ✅ Child data consent added
 
 **Example:**
 ```typescript
@@ -186,22 +186,22 @@ Users have the right to:
 ### Ideal User Journey:
 
 **Parent Signup:**
-1. Email + password → Supabase Auth
-2. Email verification → Click link in inbox
-3. Phone OTP → Enter 6-digit code
-4. KVKK Consent → Check all required boxes
-5. Profile completion → Name, address, etc.
+1. Email + password → Supabase Auth ✅
+2. Email verification → Click link in inbox ✅
+3. Phone OTP → Enter 6-digit code ⏳ (needs SMS provider)
+4. KVKK Consent → Check all required boxes ✅
+5. Profile completion → Name, address, etc. ✅
 6. ✅ Account active
 
 **Sitter Signup:**
-1. University email + password → Supabase Auth
-2. Email verification → Click link in inbox
-3. Phone OTP → Enter 6-digit code
-4. KVKK Consent → Including background check consent
-5. Profile completion → University, year, etc.
-6. Document upload → ID, student card, background check
-7. ⏳ Pending admin verification
-8. Admin approves → ✅ Account active
+1. University email + password → Supabase Auth ✅
+2. Email verification → Click link in inbox ✅
+3. Phone OTP → Enter 6-digit code ⏳ (needs SMS provider)
+4. KVKK Consent → Including background check consent ✅
+5. Profile completion → University, year, etc. ✅
+6. Document upload → ID, student card, background check ✅
+7. ⏳ Pending admin verification ✅
+8. Admin approves → ✅ Account active ✅
 
 ---
 
@@ -236,13 +236,13 @@ Users have the right to:
 
 ### Phase 1 (Before Launch):
 1. Get legal documents drafted ⚠️ CRITICAL
-2. Add consent checkboxes to registration
+2. ~~Add consent checkboxes to registration~~ ✅ DONE
 3. Set up SMS provider for OTP
 4. Test full authentication flow
 
 ### Phase 2 (Before 1000 users):
 1. Register with VERBİS
-2. Implement data export functionality
+2. ~~Implement data export functionality~~ ✅ DONE
 3. Add data retention automation
 4. Privacy policy review
 
@@ -258,7 +258,7 @@ Users have the right to:
 **What you need to DO:**
 1. ⚠️ Hire lawyer for KVKK texts (CRITICAL - do this first)
 2. Sign up for SMS provider (Netgsm/Twilio)
-3. Add consent checkboxes to registration forms
+3. ~~Add consent checkboxes to registration forms~~ ✅ DONE
 4. Test the full authentication flow
 
 **What's already DONE:**
@@ -266,11 +266,16 @@ Users have the right to:
 - Account deletion functionality ✅
 - Legal page structure ✅
 - Basic consent tracking ✅
+- Consent checkboxes in Parent registration ✅
+- Consent checkboxes in Sitter registration ✅
+- Child data consent in AddChildForm ✅
+- Location consent component ✅
+- Data export edge function ✅
 
 **Timeline:**
 - Legal documents: 1-2 weeks (lawyer dependent)
 - SMS setup: 1-2 days
-- Consent implementation: 3-5 days coding
+- ~~Consent implementation: 3-5 days coding~~ ✅ DONE
 - Testing: 1 week
 
-**Total MVP time: ~3-4 weeks** before you can legally launch
+**Total MVP time: ~2-3 weeks** (consent coding already done)
