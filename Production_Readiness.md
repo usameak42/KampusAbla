@@ -1,9 +1,38 @@
 # Production Readiness Report — KampusAbla
 
-**Generated:** 2026-03-08  
+**Generated:** 2026-03-10  
 **Analyst:** Principal Software Architect / Production Readiness Consultant  
 **Codebase Snapshot:** ~66,000 LOC (310 TypeScript/TSX files)  
 **Build Status:** ✅ Passes (vite build, 112/127 tests passing)
+
+---
+
+## 2. Changes Since Last Report (2026-03-08 → 2026-03-10)
+
+**Resolved items:**
+- ✅ **Admin routes**: Obfuscated to `/mgmt/*` with rate limiting
+- ✅ **Console guards**: `installProductionConsoleGuards()` called in `main.tsx` line 70
+- ✅ **Robots.txt**: Disallows `/mgmt/` and `/admin/`
+- ✅ **HTML lang**: Set to `lang="tr"` for Turkish market
+- ✅ **SEO**: Turkish title and meta description added
+- ✅ **Footer**: Dead links (`/careers`, `/press`, `/contact`) removed/fixed
+- ✅ **CSP**: Meta tag added in `index.html` (partially resolves security header issue)
+- ✅ **i18n**: ~75%+ coverage (login, admin, dashboard keys added)
+- ✅ **Webhooks**: Signature verification missing `await` fixed, HMAC-SHA256 verification added
+- ✅ **RPC Auth**: `auth.uid()` checks added to booking RPCs, `has_role` check added to admin analytics RPC
+- ✅ **CORS**: Null type error fixed
+
+**Still outstanding:**
+- 🔴 BLOCKER-1: Payment tokenization simulated
+- 🔴 BLOCKER-2: Booking flow mock data (ChildrenSelector, BookingSummary, BookingModal)
+- 🔴 BLOCKER-5: Phone `tel:` link in ActiveSession
+- 🟡 Security headers in `vercel.json` (only CSP meta tag added)
+- 🟡 DisputeTrackingPage not in router
+- 🟡 Duplicate dead files (`Settings.tsx`, `Notifications.tsx`)
+- 🟡 3 admin pages commented out
+- 🟡 ~159 `any` type usages
+- 🔴 `MyNeedPosts` & `ReviewPage` use `MOCK_CHILDREN`
+- 🟡 OG image is a Lovable preview screenshot
 
 ---
 
@@ -202,6 +231,8 @@ Parents in Istanbul face a shortage of safe, affordable, verified childcare for 
 | `App.tsx:238` | `/unauthorized` route duplicated (two identical `<Route>` entries) | 🟢 Low |
 | `App.tsx:105–107` | Three admin routes (PlatformMonitoring, ContentManagement, SystemConfiguration) commented out | 🟡 Medium |
 | `src/hooks/useSearchSitters.ts` | SQL injection test exists; filtering happens via Supabase `.ilike()` — parameterised OK | 🟢 Low |
+| `src/pages/need-posts/MyNeedPosts.tsx` | Uses `MOCK_CHILDREN` instead of real data | 🔴 High |
+| `src/pages/reviews/ReviewPage.tsx` | Uses `MOCK_CHILDREN` instead of real data | 🔴 High |
 
 ### 5.2 Structural Problems
 
@@ -223,9 +254,10 @@ Parents in Istanbul face a shortage of safe, affordable, verified childcare for 
 | **Payout simulation** | `requestPayout()` returns a random fake transaction ID — real bank transfers not wired | 🔴 High |
 | **`any` casts in Supabase queries** | `as any` in several hooks/services bypasses TypeScript safety on DB responses | 🟡 Medium |
 | **Phone number call exposes real phone** | `ActiveSession.tsx` calls `window.location.href = 'tel:${phone}'` — exposes real phone numbers in active sessions; PRD states no phone number sharing | 🟡 Medium |
-| **Console guards not called at entry** | `installProductionConsoleGuards()` exists in `src/lib/logger.ts` but `src/main.tsx` does not call it | 🟡 Medium |
-| **Weak CORS config** | `vercel.json` only sets HSTS — no `Content-Security-Policy`, no `X-Frame-Options`, no `X-Content-Type-Options` security headers | 🟡 Medium |
+| **Console guards not called at entry** | `installProductionConsoleGuards()` exists in `src/lib/logger.ts` but `src/main.tsx` does not call it | ✅ Resolved (Called in main.tsx) |
+| **Weak CORS config** | `vercel.json` only sets HSTS — no `Content-Security-Policy`, no `X-Frame-Options`, no `X-Content-Type-Options` security headers | 🟡 Partially Resolved (CSP meta tag added) |
 | **Missing rate-limiting on client** | Supabase Edge Function `rate-limit.ts` exists but client-side abuse prevention is not implemented | 🟡 Medium |
+| **Admin Route Discoverability** | Admin routes discoverable at `/admin/*` | ✅ Resolved (Obfuscated to `/mgmt/*`) |
 
 ### 5.4 Engineering Quality Indicators
 
@@ -260,7 +292,7 @@ Parents in Istanbul face a shortage of safe, affordable, verified childcare for 
 **Action:** Replace `mockChildren` arrays with `useChildren()` hook data in all three components.
 
 ### 6.3 Security Headers (High)
-**Problem:** `vercel.json` only configures HSTS. Missing: `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`.  
+**Problem:** `vercel.json` only configures HSTS. Missing: `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`. Currently, CSP is partially addressed via a meta tag in `index.html`.  
 **Why It Matters:** The app handles children's personal data. Weak headers expose it to XSS, clickjacking, and MIME sniffing attacks.  
 **Action:** Add a comprehensive header block to `vercel.json`.
 
@@ -280,9 +312,10 @@ Parents in Istanbul face a shortage of safe, affordable, verified childcare for 
 **Action:** Delete `src/pages/settings/Settings.tsx` and `src/pages/notifications/Notifications.tsx`.
 
 ### 6.7 `installProductionConsoleGuards()` Not Called (Medium)
+**Status:** ✅ Resolved
 **Problem:** The function that silences `console.log/info/debug` in production was written in `src/lib/logger.ts` but `src/main.tsx` never invokes it.  
 **Why It Matters:** Debug output may leak internal app state to browser console in production.  
-**Action:** Add `installProductionConsoleGuards()` call at the top of `src/main.tsx`.
+**Action:** Add `installProductionConsoleGuards()` call at the top of `src/main.tsx`. (Done line 70)
 
 ### 6.8 Automated Test Coverage Gaps (Medium)
 **Problem:** No component-level render tests (React Testing Library tests exist only at hook/service level). E2E tests require live staging credentials.  
@@ -305,16 +338,16 @@ Parents in Istanbul face a shortage of safe, affordable, verified childcare for 
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│           PRODUCTION READINESS SCORE: 52/100        │
+│           PRODUCTION READINESS SCORE: 65/100        │
 │                                                     │
 │  Core Architecture         ████████████  85/100    │
-│  Feature Completeness      ██████░░░░░░  55/100    │
+│  Feature Completeness      ██████░░░░░░  58/100    │
 │  Test Coverage             ██████░░░░░░  58/100    │
-│  Security                  ████░░░░░░░░  42/100    │
+│  Security                  ██████░░░░░░  58/100    │
 │  Payment Integration       ████░░░░░░░░  35/100    │
 │  Deployment Readiness      ██████░░░░░░  60/100    │
-│  Compliance (KVKK)         ████████░░░░  72/100    │
-│  Code Quality              ████████░░░░  70/100    │
+│  Compliance (KVKK)         ████████░░░░  78/100    │
+│  Code Quality              ████████░░░░  75/100    │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -344,8 +377,8 @@ The following items **must be resolved before any public release**:
 - Verify `.gitignore` excludes `.env` and audit git history for any service role key commits
 - **File:** `.env` (verify it is in `.gitignore`)
 
-### 🔴 BLOCKER-4: Security Headers Missing
-- No `Content-Security-Policy` in `vercel.json`
+### 🔴 BLOCKER-4: Security Headers Missing in vercel.json
+- CSP is partially addressed via a meta tag in `index.html`, but no `Content-Security-Policy` in `vercel.json`
 - No `X-Frame-Options`, `X-Content-Type-Options`
 - This is a platform handling children's personal data (KVKK-regulated)
 - **File:** `vercel.json`
@@ -417,11 +450,7 @@ git rm --cached .env && git commit -m "chore: remove .env from tracking"
 - Resolve `src/components/booking/` vs `src/components/bookings/` directory split (consolidate)
 
 **I-3. Call `installProductionConsoleGuards()` in `src/main.tsx`**
-```tsx
-// At top of main.tsx, before ReactDOM.createRoot:
-import { installProductionConsoleGuards } from "@/lib/logger";
-installProductionConsoleGuards();
-```
+- ✅ **Done**: Called in `main.tsx` line 70.
 
 **I-4. Fix Duplicate Route in App.tsx**
 - Remove the second `<Route path="/unauthorized" element={<NotFound />} />` (line 238, exact duplicate of line 237)
@@ -475,6 +504,7 @@ rollupOptions: {
 - Currently each hook/service has its own error formatting pattern
 
 **G-4. Internationalisation Completion**
+- ✅ **Partially Done**: ~75%+ coverage (login, admin, dashboard keys added).
 - i18next is installed but Turkish translations are hardcoded inline as string literals
 - Create proper `public/locales/tr/` translation files to enable future locale support
 
@@ -578,17 +608,18 @@ User opens app
 | Need Posts (job board) | ✅ Complete |
 | Sitter Search + Filters | ✅ Complete |
 | Booking Initiation | ⚠️ UI uses mock data — needs real data wiring |
-| Payment Processing | ⚠️ Edge Functions exist; client tokenisation is simulated |
+| Payment Processing | ⚠️ Edge Functions exist; client tokenisation is simulated (Webhook HMAC-SHA256 signature verification added) |
 | Active Session + GPS Tracking | ✅ Complete |
 | In-app Chat | ✅ Complete |
 | Review System | ✅ Complete |
-| Admin Panel | ✅ Complete (7 sections) |
+| Admin Panel | ✅ Complete (Obfuscated paths to `/mgmt/*` + rate limited) |
 | Dispute Management | ✅ Complete (tracking page missing from router) |
 | KVKK Compliance Pages | ✅ Complete |
 | Notifications (FCM) | ✅ Complete |
 | Earnings / Payouts | ⚠️ UI complete; real payout API not wired |
 | Subscription Plans | ✅ Complete |
 | Cancellation Policy | ✅ Complete (4-bucket model) |
+| Internationalisation (i18n) | ⚠️ Partial (~75%+ coverage) |
 
 ---
 
