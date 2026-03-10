@@ -49,24 +49,33 @@ export function useNotifications({ userId }: UseNotificationsOptions) {
     useEffect(() => {
         if (!userId) return;
 
-        const channel = supabase
-            .channel(`notifications:${userId}`)
-            .on(
-                "postgres_changes",
-                {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "notifications",
-                    filter: `user_id=eq.${userId}`,
-                },
-                () => {
-                    queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
-                }
-            )
-            .subscribe();
+        let channel: ReturnType<typeof supabase.channel> | null = null;
+        try {
+            channel = supabase
+                .channel(`notifications:${userId}`)
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "INSERT",
+                        schema: "public",
+                        table: "notifications",
+                        filter: `user_id=eq.${userId}`,
+                    },
+                    () => {
+                        queryClient.invalidateQueries({ queryKey: ["notifications", userId] });
+                    }
+                )
+                .subscribe((status, err) => {
+                    if (err) {
+                        console.warn("Realtime notification subscription error:", err.message);
+                    }
+                });
+        } catch (e) {
+            console.warn("Failed to create realtime channel for notifications:", e);
+        }
 
         return () => {
-            supabase.removeChannel(channel);
+            if (channel) supabase.removeChannel(channel);
         };
     }, [userId, queryClient]);
 
