@@ -4,7 +4,6 @@ import { checkRateLimit, getRateLimitHeaders, RATE_LIMITS } from '../_shared/rat
 import { handleCorsPreflight, createCorsResponse } from '../_shared/cors.ts'
 
 interface PaymentRequest {
-    amount: number;
     bookingId: string;
     sitterSubMerchantKey: string;
     paymentCard: {
@@ -77,12 +76,13 @@ serve(async (req) => {
             throw new Error('Unauthorized')
         }
 
-        // RATE LIMITING
+        // Service role client for privileged operations (financial writes)
         const serviceRoleClient = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
 
+        // RATE LIMITING
         const rateLimitResult = await checkRateLimit(serviceRoleClient, {
             identifier: user.id,
             ...RATE_LIMITS.BOOKING_CREATE
@@ -102,13 +102,37 @@ serve(async (req) => {
 
         const paymentRequest: PaymentRequest = await req.json()
 
+        // SERVER-SIDE AMOUNT VALIDATION: Fetch booking from DB, never trust client amount
+        const { data: booking, error: bookingError } = await serviceRoleClient
+            .from('bookings')
+            .select('id, parent_id, sitter_id, total_amount, status')
+            .eq('id', paymentRequest.bookingId)
+            .single();
+
+        if (bookingError || !booking) {
+            throw new Error('Rezervasyon bulunamadı');
+        }
+
+        if (booking.parent_id !== user.id) {
+            throw new Error('Bu rezervasyon size ait değil');
+        }
+
+        if (booking.status !== 'pending_payment' && booking.status !== 'pending') {
+            throw new Error('Rezervasyon ödeme için uygun durumda değil');
+        }
+
+        if (!booking.total_amount || booking.total_amount <= 0) {
+            throw new Error('Geçersiz rezervasyon tutarı');
+        }
+
+        // Use the authoritative amount from the database
+        const totalAmount = Number(booking.total_amount);
+        const platformFee = totalAmount * 0.10;
+        const sitterAmount = totalAmount * 0.90;
+
         const apiKey = Deno.env.get('IYZICO_API_KEY') || '';
         const secretKey = Deno.env.get('IYZICO_SECRET_KEY') || '';
         const baseUrl = Deno.env.get('IYZICO_BASE_URL') || 'https://sandbox-api.iyzipay.com';
-
-        const totalAmount = paymentRequest.amount
-        const platformFee = totalAmount * 0.10
-        const sitterAmount = totalAmount * 0.90
 
         const iyzicoRequest = {
             locale: 'tr',
@@ -153,9 +177,10 @@ serve(async (req) => {
             throw new Error(paymentResult.errorMessage || 'Payment failed')
         }
 
-        const { error: dbError } = await supabaseClient.from('transactions').insert({
+        // Use serviceRoleClient for financial table writes (RLS restricts to service_role only)
+        const { error: dbError } = await serviceRoleClient.from('transactions').insert({
             booking_id: paymentRequest.bookingId,
-            sitter_id: user.id,
+            sitter_id: booking.sitter_id,
             amount: totalAmount,
             platform_fee: platformFee,
             sitter_amount: sitterAmount,
