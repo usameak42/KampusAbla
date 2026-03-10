@@ -36,7 +36,16 @@ async function verifyWebhookSignature(
             .map(b => b.toString(16).padStart(2, '0')).join('');
 
         // Constant-time comparison to prevent timing attacks
-        return calculatedSignature === receivedSignature;
+        const encoder2 = new TextEncoder();
+        const a = encoder2.encode(calculatedSignature);
+        const b = encoder2.encode(receivedSignature);
+        if (a.byteLength !== b.byteLength) return false;
+        const keyForCompare = await crypto.subtle.importKey(
+            "raw", a, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+        );
+        const sig = new Uint8Array(await crypto.subtle.sign("HMAC", keyForCompare, b));
+        const expected = new Uint8Array(await crypto.subtle.sign("HMAC", keyForCompare, a));
+        return sig.every((val, i) => val === expected[i]);
     } catch (error) {
         console.error('Error verifying webhook signature:', error);
         return false;
@@ -134,7 +143,7 @@ serve(async (req) => {
         const signature = req.headers.get('X-IYZ-Signature');
         const secretKey = Deno.env.get('IYZICO_SECRET_KEY') ?? '';
 
-        const isValid = verifyWebhookSignature(rawBody, signature, secretKey);
+        const isValid = await verifyWebhookSignature(rawBody, signature, secretKey);
         if (!isValid) {
             console.error('Invalid webhook signature - possible unauthorized request');
             await logWebhookEvent(supabaseClient, event, 'failed', 'Invalid signature');

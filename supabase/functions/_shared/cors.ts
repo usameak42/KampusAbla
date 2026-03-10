@@ -95,7 +95,7 @@ export const createCorsResponse = (
     headers: Record<string, string> = {},
     requestOrigin?: string | null
 ): Response => {
-    const corsHeaders = getCorsHeaders(requestOrigin);
+    const corsHeaders = getCorsHeaders(requestOrigin ?? undefined);
 
     // Convert body to JSON if it's an object
     const responseBody = typeof body === 'string' ? body : JSON.stringify(body);
