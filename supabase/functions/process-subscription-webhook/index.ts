@@ -3,17 +3,53 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { handleCorsPreflight, createCorsResponse } from '../_shared/cors.ts';
 
-const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+/**
+ * Verify webhook signature using HMAC-SHA256
+ */
+async function verifyWebhookSignature(
+    payload: string,
+    receivedSignature: string | null,
+    secretKey: string
+): Promise<boolean> {
+    if (!receivedSignature || !secretKey) {
+        console.warn('Missing signature or secret key');
+        return false;
+    }
+
+    try {
+        const encoder = new TextEncoder();
+        const keyData = encoder.encode(secretKey);
+        const key = await crypto.subtle.importKey(
+            "raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+        );
+        const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
+        const calculatedSignature = Array.from(new Uint8Array(signature))
+            .map(b => b.toString(16).padStart(2, '0')).join('');
+
+        // Timing-safe comparison
+        const a = encoder.encode(calculatedSignature);
+        const b = encoder.encode(receivedSignature);
+        if (a.byteLength !== b.byteLength) return false;
+        const cmpKey = await crypto.subtle.importKey(
+            "raw", a, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+        );
+        const sig1 = new Uint8Array(await crypto.subtle.sign("HMAC", cmpKey, b));
+        const sig2 = new Uint8Array(await crypto.subtle.sign("HMAC", cmpKey, a));
+        return sig1.every((val, i) => val === sig2[i]);
+    } catch (error) {
+        console.error('Error verifying webhook signature:', error);
+        return false;
+    }
+}
 
 serve(async (req) => {
     // Handle CORS preflight
-    if (req.method === "OPTIONS") {
-        return new Response("ok", { headers: corsHeaders });
-    }
+    const preflightResponse = handleCorsPreflight(req);
+    if (preflightResponse) return preflightResponse;
+
+    const origin = req.headers.get('origin');
 
     try {
         const supabaseClient = createClient(
@@ -21,54 +57,104 @@ serve(async (req) => {
             Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
         );
 
-        // 1. Verify Webhook Signature (Provider specific)
-        // const signature = req.headers.get('X-Iyzico-Signature');
-        // ... verify ...
+        // Read raw body for signature verification
+        const rawBody = await req.text();
 
-        const body = await req.json();
-        console.log("Received webhook payload:", body);
+        // SECURITY: Verify webhook signature
+        const signature = req.headers.get('X-IYZ-Signature') || req.headers.get('x-webhook-signature');
+        const secretKey = Deno.env.get('IYZICO_SECRET_KEY') ?? '';
 
-        // Hypothetical payload structure
-        const { event, userId, planId, externalId, price, status } = body;
+        const isValid = await verifyWebhookSignature(rawBody, signature, secretKey);
+        if (!isValid) {
+            console.error('Invalid webhook signature - rejecting request');
+            return createCorsResponse(
+                { error: 'Invalid signature' },
+                401,
+                {},
+                origin
+            );
+        }
+
+        const body = JSON.parse(rawBody);
+        console.log("Received webhook event:", body.event);
+
+        const { event, planId, externalId, price, status } = body;
+
+        // SECURITY: Never trust userId from webhook body.
+        // Resolve user from existing subscription record via externalId.
+        let resolvedUserId: string | null = null;
+
+        if (event !== "subscription.success") {
+            // For non-creation events, look up existing subscription
+            const { data: existingSub } = await supabaseClient
+                .from("subscriptions")
+                .select("user_id")
+                .eq("external_id", externalId)
+                .single();
+
+            if (!existingSub) {
+                console.error("No subscription found for external_id:", externalId);
+                return createCorsResponse(
+                    { error: "Subscription not found" },
+                    404,
+                    {},
+                    origin
+                );
+            }
+            resolvedUserId = existingSub.user_id;
+        } else {
+            // For subscription.success, we need the userId but validate it exists
+            const userId = body.userId;
+            if (!userId) {
+                return createCorsResponse(
+                    { error: "Missing userId for new subscription" },
+                    400,
+                    {},
+                    origin
+                );
+            }
+            resolvedUserId = userId;
+        }
+
+        if (!resolvedUserId) {
+            return createCorsResponse(
+                { error: "Could not resolve user" },
+                400,
+                {},
+                origin
+            );
+        }
 
         if (event === "subscription.success") {
-            // 2. Update Subscription Record
             const { error: subError } = await supabaseClient
                 .from("subscriptions")
                 .upsert({
-                    user_id: userId,
+                    user_id: resolvedUserId,
                     plan_id: planId,
                     external_id: externalId,
                     status: "active",
                     current_period_start: new Date().toISOString(),
-                    current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 days example
+                    current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
                     auto_renew: true,
                 });
 
             if (subError) throw subError;
 
-            // 2b. Deactivate any other active subscriptions for this user (Upgrade/Downgrade logic)
-            // We want to ensure only ONE active subscription per user.
-            // Ideally we do this in a transaction or slightly before upsert, but after is fine if we exclude the one we just upserted/inserted.
-            // However, finding the ID of the just-upserted row is tricky without returning it.
-            // Let's assume we do a fetch first or update others.
-
-            // Safer approach: Deactivate all *other* active subscriptions for this user
-            // We can match by user_id and NOT external_id (assuming external_id is unique per sub)
+            // Deactivate other active subscriptions for this user
             const { error: deactivateError } = await supabaseClient
                 .from("subscriptions")
                 .update({ status: 'cancelled', auto_renew: false, cancelled_at: new Date().toISOString() })
-                .eq('user_id', userId)
+                .eq('user_id', resolvedUserId)
                 .eq('status', 'active')
                 .neq('external_id', externalId);
 
             if (deactivateError) console.error("Error deactivating old subscriptions:", deactivateError);
 
-            // 3. Record Billing History
+            // Record billing history
             const { error: historyError } = await supabaseClient
                 .from("billing_history")
                 .insert({
-                    user_id: userId,
+                    user_id: resolvedUserId,
                     amount: price,
                     description: `Plan Upgrade / Renewal - ${planId}`,
                     status: "paid",
@@ -77,12 +163,11 @@ serve(async (req) => {
 
             if (historyError) throw historyError;
         } else if (event === "subscription.cancelled") {
-            // 2. Handle Cancellation
             const { error: subError } = await supabaseClient
                 .from("subscriptions")
                 .update({
                     status: "cancelled",
-                    cancel_at_period_end: false, // Immediate cancellation if specified, or update based on provider logic
+                    cancel_at_period_end: false,
                     auto_renew: false
                 })
                 .eq("external_id", externalId);
@@ -90,7 +175,6 @@ serve(async (req) => {
             if (subError) throw subError;
 
         } else if (event === "payment.failed") {
-            // 3. Handle Payment Failure
             const { error: subError } = await supabaseClient
                 .from("subscriptions")
                 .update({
@@ -104,7 +188,7 @@ serve(async (req) => {
             await supabaseClient
                 .from("billing_history")
                 .insert({
-                    user_id: userId,
+                    user_id: resolvedUserId,
                     amount: price,
                     description: `Payment Failed - ${planId}`,
                     status: "failed",
@@ -112,17 +196,20 @@ serve(async (req) => {
                 });
         }
 
-        return new Response(JSON.stringify({ success: true }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-        });
+        return createCorsResponse(
+            { success: true },
+            200,
+            {},
+            origin
+        );
 
     } catch (error) {
         console.error("Error processing webhook:", error);
-        const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
-        return new Response(JSON.stringify({ error: errorMessage }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400,
-        });
+        return createCorsResponse(
+            { error: "Internal server error" },
+            500,
+            {},
+            origin
+        );
     }
 });

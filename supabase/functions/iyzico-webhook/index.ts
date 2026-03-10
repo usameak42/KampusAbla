@@ -143,7 +143,7 @@ serve(async (req) => {
         const signature = req.headers.get('X-IYZ-Signature');
         const secretKey = Deno.env.get('IYZICO_SECRET_KEY') ?? '';
 
-        const isValid = verifyWebhookSignature(rawBody, signature, secretKey);
+        const isValid = await verifyWebhookSignature(rawBody, signature, secretKey);
         if (!isValid) {
             console.error('Invalid webhook signature - possible unauthorized request');
             await logWebhookEvent(supabaseClient, event, 'failed', 'Invalid signature');
