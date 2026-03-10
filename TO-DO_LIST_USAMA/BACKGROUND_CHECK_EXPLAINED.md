@@ -133,9 +133,20 @@ Turkish citizens can obtain their background check ("Adli Sicil Belgesi") from:
 
 ### For Better UX:
 - [ ] Add example document image to SitterVerification page
-- [ ] Add file validation (PDF only, max 5MB)
-- [ ] Show preview of uploaded PDF before submit
-- [ ] Auto-reject if document older than 90 days
+- [x] Add file validation (PDF only, max 5MB) ✅ IMPLEMENTED
+  - Strict `application/pdf` MIME type check on all PDF document types
+  - File size validated against configurable `maxSize` prop (default 5MB)
+  - Clear Turkish error messages for invalid formats
+- [x] Show preview of uploaded PDF before submit ✅ IMPLEMENTED
+  - Local PDF preview rendered via `URL.createObjectURL` in an iframe before upload
+  - Staged file flow: select → preview → confirm → upload
+  - File info (name, size) displayed alongside preview
+  - Cancel button to discard and re-select
+- [x] Auto-reject if document older than 90 days ✅ IMPLEMENTED
+  - Document date input required for all PDF document types before upload
+  - Client-side validation: documents older than 90 days are rejected
+  - Upload button disabled until valid date is entered
+  - Clear warning message with specific rejection reason
 
 ### For Scale (Future):
 - [ ] Research e-Devlet API access
@@ -146,6 +157,13 @@ Turkish citizens can obtain their background check ("Adli Sicil Belgesi") from:
 ## Testing Checklist
 
 - [ ] Upload valid background check PDF
+- [x] PDF-only validation rejects non-PDF files (e.g., .jpg, .docx) ✅
+- [x] File size validation rejects files > 5MB ✅
+- [x] Local PDF preview displays correctly before upload ✅
+- [x] Document date field appears for PDF document types ✅
+- [x] Documents older than 90 days are rejected with error message ✅
+- [x] Cancel button discards staged file and resets form ✅
+- [x] Successful upload clears staged state and shows uploaded preview ✅
 - [ ] Admin can view PDF in verification queue
 - [ ] Admin can approve verification
 - [ ] Admin can reject with reason
